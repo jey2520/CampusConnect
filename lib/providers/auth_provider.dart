@@ -58,83 +58,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final userModel = UserModel.fromMap(doc.data()!);
         state = AuthState(userModel: userModel);
       } else {
-        state = AuthState(error: "User profile does not exist inside database.");
+        state = AuthState(userModel: null, error: "Profile does not exist.");
       }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-
-  Future<bool> registerWithEmail({
-    required String email,
-    required String password,
-    required String name,
-    required String college,
-    required String department,
-    required String year,
-  }) async {
-    state = state.copyWith(isLoading: true);
-    try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      
-      if (credential.user != null) {
-        final uid = credential.user!.uid;
-        final newUser = UserModel(
-          uid: uid,
-          name: name,
-          email: email,
-          phone: '',
-          college: college,
-          department: department,
-          year: year,
-          profilePhoto: '',
-          bio: '',
-          createdAt: DateTime.now(),
-          lastLogin: DateTime.now(),
-          verified: false,
-          role: 'student',
-        );
-
-        await _firestore.collection('users').doc(uid).set(newUser.toMap());
-        await credential.user!.sendEmailVerification();
-        state = AuthState(userModel: newUser);
-        return true;
-      }
-      return false;
-    } on FirebaseAuthException catch (e) {
-      state = AuthState(error: e.message);
-      return false;
-    } catch (e) {
-      state = AuthState(error: e.toString());
-      return false;
-    }
-  }
-
-  Future<bool> loginWithEmail(String email, String password) async {
-    state = state.copyWith(isLoading: true);
-    try {
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      if (credential.user != null) {
-        // Update last login
-        await _firestore.collection('users').doc(credential.user!.uid).update({
-          'lastLogin': Timestamp.fromDate(DateTime.now()),
-        });
-        await _fetchUserProfile(credential.user!.uid);
-        return true;
-      }
-      return false;
-    } on FirebaseAuthException catch (e) {
-      state = AuthState(error: e.message);
-      return false;
-    } catch (e) {
-      state = AuthState(error: e.toString());
-      return false;
     }
   }
 
@@ -161,18 +88,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
         if (!doc.exists) {
           final newUser = UserModel(
             uid: uid,
-            name: userCredential.user!.displayName ?? 'New Student',
+            fullName: userCredential.user!.displayName ?? 'New Student',
             email: userCredential.user!.email ?? '',
-            phone: userCredential.user!.phoneNumber ?? '',
-            college: 'SRM University', // Default value
-            department: 'CS',
-            year: 'Freshman',
             profilePhoto: userCredential.user!.photoURL ?? '',
+            phoneNumber: userCredential.user!.phoneNumber ?? '',
+            college: 'SRM University', // Default value
+            department: '',
+            year: '',
             bio: '',
             createdAt: DateTime.now(),
             lastLogin: DateTime.now(),
-            verified: true,
-            role: 'student',
+            authenticationProvider: 'Google',
+            role: 'Student',
+            status: 'Active',
           );
           await _firestore.collection('users').doc(uid).set(newUser.toMap());
           state = AuthState(userModel: newUser);
@@ -188,14 +116,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       state = AuthState(error: e.toString());
       return false;
-    }
-  }
-
-  Future<void> sendPasswordResetEmail(String email) async {
-    try {
-      await _auth.sendPasswordResetEmail(email: email);
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
     }
   }
 
@@ -220,6 +140,31 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(userModel: null);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<bool> deleteAccount() async {
+    if (state.userModel == null) return false;
+    final uid = state.userModel!.uid;
+    state = state.copyWith(isLoading: true);
+    try {
+      // 1. Delete document from Firestore
+      await _firestore.collection('users').doc(uid).delete();
+      
+      // 2. Sign out Google
+      await GoogleSignIn().signOut();
+      
+      // 3. Delete firebase Auth user
+      final user = _auth.currentUser;
+      if (user != null) {
+        await user.delete();
+      }
+      
+      state = AuthState(userModel: null);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
     }
   }
 }

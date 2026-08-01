@@ -1,7 +1,7 @@
 /* CampusConnect UI/UX Showcase Application Engine */
 
 // Firebase Config Integration for Real SMS Verification
-const firebaseConfig = {
+let firebaseConfig = {
   apiKey: "AIzaSyAsB123-placeholder-key-for-test",
   authDomain: "campusconnect-3e3e0.firebaseapp.com",
   projectId: "campusconnect-3e3e0",
@@ -10,8 +10,20 @@ const firebaseConfig = {
   appId: "1:1234567890:web:abcdef123456"
 };
 
+// Check if developer has connected their custom keys in the app settings panel
+const savedFirebaseConfig = localStorage.getItem('cc_firebase_config');
+if (savedFirebaseConfig) {
+  try {
+    firebaseConfig = JSON.parse(savedFirebaseConfig);
+  } catch(e) {
+    console.warn("Invalid cached Firebase config:", e);
+  }
+}
+
+let db = null;
 if (typeof firebase !== 'undefined') {
   firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
 }
 
 const SVG_ICONS = {
@@ -63,15 +75,7 @@ const SVG_ICONS = {
 };
 
 function replaceMaterialIcons(root = document) {
-  const iconElements = root.querySelectorAll('.material-icons-round, .input-icon, .search-icon, .upload-icon, .splash-cap-icon, .illustration-icon, .search-field-icon');
-  iconElements.forEach(el => {
-    if (el.querySelector('svg')) return;
-    const iconName = el.textContent.trim();
-    const path = SVG_ICONS[iconName];
-    if (path) {
-      el.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="${path}"></path></svg>`;
-    }
-  });
+  // Let the browser load the Google Font natively to prevent device-specific SVG layout glitches
 }
 
 // ==========================================================================
@@ -232,14 +236,7 @@ let chats = [];
 let users = []; // Synced cloud users list
 let myListings = JSON.parse(localStorage.getItem('myListings')) || [];
 
-let currentUser = JSON.parse(localStorage.getItem('currentUser')) || {
-  name: 'Alex Rivera',
-  email: 'alex.rivera@stanford.edu',
-  college: 'SRM University',
-  department: 'ECE',
-  year: 'Freshman',
-  initials: 'AR'
-};
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
 // Application navigation history stack
 let navigationStack = ['splash'];
@@ -1481,7 +1478,7 @@ window.addEventListener('DOMContentLoaded', () => {
   
   // Parse launch queries to support direct login access and forced phone frames
   const urlParams = new URLSearchParams(window.location.search);
-  const targetScreen = urlParams.get('screen') || 'login'; // Defaults to login directly!
+  const targetScreen = urlParams.get('screen') || 'login';
   
   if (urlParams.get('mode') === 'phone' || !window.matchMedia("(min-width: 1024px)").matches) {
     document.body.classList.add('fullscreen-app-mode');
@@ -1491,242 +1488,466 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 100);
   }
   
-  // Update UI views with cached user details if active
-  if (currentUser) {
-    document.querySelectorAll('.profile-name').forEach(el => el.textContent = currentUser.name);
-    document.querySelectorAll('.profile-email').forEach(el => el.textContent = currentUser.email);
-    document.querySelectorAll('.profile-avatar-large').forEach(el => el.textContent = currentUser.initials);
+  updateUIDisplays();
+
+  // Hide the official Google One-Tap/Sign-In elements if we are in demo configuration to avoid 404 client ID errors
+  if (firebaseConfig.apiKey.includes("placeholder")) {
+    const gIdOnload = document.getElementById('g_id_onload');
+    if (gIdOnload) gIdOnload.style.display = 'none';
+    
+    const gIdSignin = document.querySelector('.g_id_signin');
+    if (gIdSignin) gIdSignin.style.display = 'none';
+    
+    const divider = document.querySelector('.auth-divider');
+    if (divider) divider.style.display = 'none';
   }
 
-  navigateTo(targetScreen);
+  // Initialize Auth state observer for Persistent Login / Session Restore
+  if (typeof firebase !== 'undefined' && firebase.auth) {
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        // Authenticated! Fetch profile from Firestore
+        try {
+          const doc = await firebase.firestore().collection('users').doc(user.uid).get();
+          if (doc.exists) {
+            currentUser = doc.data();
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateUIDisplays();
+            
+            // Route directly to feed if at login/splash
+            if (currentScreen === 'login' || currentScreen === 'splash') {
+              navigateTo('home');
+            }
+          } else {
+            // New user signed in but didn't finish onboarding yet
+            currentUser = {
+              uid: user.uid,
+              fullName: user.displayName || 'New Student',
+              email: user.email || '',
+              profilePhoto: user.photoURL || '',
+              phoneNumber: user.phoneNumber || '',
+              college: 'SRM University',
+              department: '',
+              year: '',
+              bio: '',
+              createdAt: new Date().toISOString(),
+              lastLogin: new Date().toISOString(),
+              authenticationProvider: 'Google',
+              role: 'Student',
+              status: 'Active'
+            };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // Fill onboarding inputs
+            document.getElementById('onboard-name-input').value = currentUser.fullName;
+            document.getElementById('onboard-email-input').value = currentUser.email;
+            document.getElementById('onboard-phone-input').value = currentUser.phoneNumber || '';
+            
+            // Show onboarding
+            document.getElementById('auth-step-google').style.display = 'none';
+            document.getElementById('auth-step-onboarding').style.display = 'block';
+            document.getElementById('auth-main-title').textContent = 'Complete Profile';
+            document.getElementById('auth-sub-title').textContent = 'Just a few details to activate your student account';
+            navigateTo('login');
+          }
+        } catch (e) {
+          console.error("Auth state Firestore fetch error:", e);
+        }
+      } else {
+        // Logged out
+        currentUser = null;
+        localStorage.removeItem('currentUser');
+        navigateTo('login');
+      }
+    });
+  } else {
+    // Local / Offline fallback
+    if (currentUser) {
+      navigateTo('home');
+    } else {
+      navigateTo('login');
+    }
+  }
 
   // Initialize shared database sync
   loadSharedDatabase();
 });
 
-// Mobile Number + OTP Auth Simulator
-let tempPhoneNumber = "";
+// ==========================================================================
+// GOOGLE & FIREBASE AUTHENTICATION FLOWS
+// ==========================================================================
 
-function sendMobileOtp() {
-  const phone = document.getElementById('login-phone-input').value.trim();
-  if (phone.length < 10) {
-    showNotification('Please enter a 10-digit mobile number.');
+function updateUIDisplays() {
+  if (currentUser) {
+    const displayName = currentUser.fullName || currentUser.name || 'New Student';
+    const displayEmail = currentUser.email || '';
+    const displayInitials = (currentUser.initials || displayName.split(' ').map(n=>n[0]).join('').toUpperCase()).slice(0, 2);
+    const photoUrl = currentUser.profilePhoto || '';
+
+    document.querySelectorAll('.profile-name').forEach(el => el.textContent = displayName);
+    document.querySelectorAll('.profile-email').forEach(el => el.textContent = displayEmail);
+    
+    document.querySelectorAll('.profile-avatar-large').forEach(el => {
+      if (photoUrl) {
+        el.innerHTML = `<img src="${photoUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+      } else {
+        el.textContent = displayInitials;
+      }
+    });
+    
+    const collegePill = document.querySelector('.badge-pill.bg-primary-light');
+    if (collegePill) {
+      collegePill.textContent = `${currentUser.college || 'SRM University'} • ${currentUser.year || 'Student'}`;
+    }
+  }
+}
+window.updateUIDisplays = updateUIDisplays;
+
+async function handleGoogleSignIn() {
+  if (firebaseConfig.apiKey.includes("placeholder")) {
+    document.getElementById('comp-google-modal').classList.add('active');
     return;
   }
   
-  tempPhoneNumber = phone;
-  const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
-  showNotification('Requesting SMS OTP...');
-
-  if (typeof firebase !== 'undefined' && firebase.auth) {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-        'size': 'invisible'
-      });
-    }
-
-    firebase.auth().signInWithPhoneNumber(formattedPhone, window.recaptchaVerifier)
-      .then((confirmationResult) => {
-        window.confirmationResult = confirmationResult;
-        showNotification('SMS verification code sent! Check your phone.');
-        
-        document.getElementById('auth-step-mobile').style.display = 'none';
-        document.getElementById('auth-step-otp').style.display = 'block';
-        document.getElementById('auth-sub-title').textContent = 'Enter the code sent to your phone';
-      })
-      .catch((error) => {
-        console.warn("Firebase Phone Auth failed, using demo fallback:", error);
-        triggerFallbackOtp(formattedPhone);
-      });
-  } else {
-    triggerFallbackOtp(formattedPhone);
+  if (typeof firebase === 'undefined' || !firebase.auth) {
+    showNotification("Firebase Auth SDK is not loaded.");
+    return;
+  }
+  showLoading(true);
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result.user;
+    await processUserSignIn(user);
+  } catch (error) {
+    console.error("Google Sign-In Error:", error);
+    showNotification(`Google Sign-In failed: ${error.message}`);
+  } finally {
+    showLoading(false);
   }
 }
 
-function triggerFallbackOtp(formattedPhone) {
-  const otpCode = Math.floor(100000 + Math.random() * 900000);
-  window.activeOtp = otpCode.toString();
-  
-  showNotification("SMS verification code dispatched!");
-
-  // Call free Textbelt SMS gateway to send a real text message to their phone
-  fetch('https://textbelt.com/text', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      phone: formattedPhone,
-      message: `Your CampusConnect verification code is: ${otpCode}. Valid for 5 minutes.`,
-      key: 'textbelt'
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      console.log("Real SMS sent successfully!");
-    } else {
-      console.warn("SMS limit reached for this IP. Fallback OTP code is:", otpCode);
-      // If the free Textbelt gateway limit is reached for their IP, show fallback toast so they don't get stuck
-      showNotification(`Gateway busy. Use verification code: ${otpCode}`);
-    }
-  })
-  .catch(err => {
-    console.warn("SMS dispatch error:", err);
-    showNotification(`Gateway busy. Use verification code: ${otpCode}`);
-  });
-
-  document.getElementById('auth-step-mobile').style.display = 'none';
-  document.getElementById('auth-step-otp').style.display = 'block';
-  document.getElementById('auth-sub-title').textContent = 'Enter the 6-digit OTP code sent to your phone';
-}
-
-function verifyMobileOtp() {
-  const otp = document.getElementById('login-otp-input').value.trim();
-
-  if (window.confirmationResult) {
-    showNotification('Verifying code...');
-    window.confirmationResult.confirm(otp)
-      .then((result) => {
-        showNotification('Phone number verified!');
-        handleLoginSuccess();
-      })
-      .catch((error) => {
-        showNotification('Invalid SMS code. Please try again.');
-      });
-  } else {
-    // Sandbox test fallback bypass (only if Firebase is not connected)
-    if (otp === "123456") {
-      showNotification('Demo validation complete.');
-      handleLoginSuccess();
-    } else {
-      showNotification('Verification missing. Use code 123456 for demo bypass.');
-    }
+async function handleGoogleCredentialResponse(response) {
+  if (typeof firebase === 'undefined' || !firebase.auth) {
+    showNotification("Firebase Auth SDK is not loaded.");
+    return;
+  }
+  showLoading(true);
+  try {
+    const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+    const result = await firebase.auth().signInWithCredential(credential);
+    const user = result.user;
+    await processUserSignIn(user);
+  } catch (error) {
+    console.error("Google One Tap error:", error);
+    showNotification(`Google One Tap sign in failed: ${error.message}`);
+  } finally {
+    showLoading(false);
   }
 }
 
-function handleLoginSuccess() {
-  // Check if this phone number already exists in our registered users database
-  const matchedUser = users.find(u => u.phone === tempPhoneNumber);
-  if (matchedUser) {
-    currentUser = matchedUser;
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+async function processUserSignIn(user) {
+  try {
+    const userDocRef = firebase.firestore().collection('users').doc(user.uid);
+    const doc = await userDocRef.get();
     
-    // Update profile displays
-    document.querySelectorAll('.profile-name').forEach(el => el.textContent = currentUser.name);
-    document.querySelectorAll('.profile-email').forEach(el => el.textContent = currentUser.email);
-    document.querySelectorAll('.profile-avatar-large').forEach(el => el.textContent = currentUser.initials);
-
-    navigateTo('home');
-  } else {
-    // Show onboarding signup form
-    document.getElementById('auth-step-otp').style.display = 'none';
-    document.getElementById('auth-step-onboarding').style.display = 'block';
-    document.getElementById('auth-main-title').textContent = 'Complete Registration';
-    document.getElementById('auth-sub-title').textContent = 'Enter details to register your student profile';
+    if (doc.exists) {
+      // Returning user -> restore previous login session
+      const userData = doc.data();
+      
+      // Update last login timestamp in Firestore
+      await userDocRef.update({
+        lastLogin: new Date().toISOString()
+      });
+      
+      currentUser = userData;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      updateUIDisplays();
+      showNotification(`Welcome back, ${currentUser.fullName}!`);
+      navigateTo('home');
+    } else {
+      // New user -> Onboarding Complete Profile redirect!
+      currentUser = {
+        uid: user.uid,
+        fullName: user.displayName || '',
+        email: user.email || '',
+        profilePhoto: user.photoURL || '',
+        phoneNumber: user.phoneNumber || '',
+        college: 'SRM University', // default
+        department: '',
+        year: '',
+        bio: '',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        authenticationProvider: 'Google',
+        role: 'Student',
+        status: 'Active'
+      };
+      
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      // Fill in Onboarding fields
+      document.getElementById('onboard-name-input').value = currentUser.fullName;
+      document.getElementById('onboard-email-input').value = currentUser.email;
+      document.getElementById('onboard-phone-input').value = currentUser.phoneNumber || '';
+      
+      // Show onboarding form
+      document.getElementById('auth-step-google').style.display = 'none';
+      document.getElementById('auth-step-onboarding').style.display = 'block';
+      document.getElementById('auth-main-title').textContent = 'Complete Profile';
+      document.getElementById('auth-sub-title').textContent = 'Just a few details to activate your student account';
+    }
+  } catch (err) {
+    console.error("Error processing user sign-in:", err);
+    showNotification("Error loading profile from database.");
   }
 }
 
-function completeOnboarding() {
-  const name = document.getElementById('onboard-name-input').value.trim();
+async function completeOnboarding() {
+  const phone = document.getElementById('onboard-phone-input').value.trim();
   const college = document.getElementById('onboard-college-input').value;
   const dept = document.getElementById('onboard-dept-input').value.trim();
+  const year = document.getElementById('onboard-year-input').value.trim();
+  const bio = document.getElementById('onboard-bio-input').value.trim();
   
-  if (!name) {
-    showNotification('Please enter your name.');
+  if (!phone) {
+    showNotification('Please enter your phone number.');
     return;
   }
   if (!dept) {
     showNotification('Please enter your department.');
     return;
   }
+  if (!year) {
+    showNotification('Please enter your year of study.');
+    return;
+  }
+
+  showLoading(true);
+  try {
+    currentUser.phoneNumber = phone;
+    currentUser.college = college;
+    currentUser.department = dept;
+    currentUser.year = year;
+    currentUser.bio = bio;
+    currentUser.lastLogin = new Date().toISOString();
+    
+    // Save document to Firestore
+    await firebase.firestore().collection('users').doc(currentUser.uid).set(currentUser);
+    
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    updateUIDisplays();
+    
+    showNotification('Student profile activated successfully!');
+    navigateTo('home');
+  } catch (error) {
+    console.error("Error completing onboarding:", error);
+    showNotification(`Profile registration failed: ${error.message}`);
+  } finally {
+    showLoading(false);
+  }
+}
+
+function openEditProfileModal() {
+  if (!currentUser) return;
+  document.getElementById('edit-profile-name').value = currentUser.fullName || currentUser.name || '';
+  document.getElementById('edit-profile-phone').value = currentUser.phoneNumber || '';
+  document.getElementById('edit-profile-college').value = currentUser.college || 'SRM University';
+  document.getElementById('edit-profile-dept').value = currentUser.department || '';
+  document.getElementById('edit-profile-year').value = currentUser.year || '';
+  document.getElementById('edit-profile-bio').value = currentUser.bio || '';
+  document.getElementById('edit-profile-photo').value = currentUser.profilePhoto || '';
   
-  currentUser = {
-    name: name,
-    email: name.toLowerCase().replace(/\s+/g, '') + '@college.edu',
-    college: college,
-    department: dept,
-    year: 'Freshman',
-    phone: tempPhoneNumber,
-    initials: name.split(' ').map(n=>n[0]).join('').toUpperCase()
+  document.getElementById('comp-edit-profile-modal').classList.add('active');
+}
+
+async function submitEditProfile() {
+  const name = document.getElementById('edit-profile-name').value.trim();
+  const phone = document.getElementById('edit-profile-phone').value.trim();
+  const college = document.getElementById('edit-profile-college').value.trim();
+  const dept = document.getElementById('edit-profile-dept').value.trim();
+  const year = document.getElementById('edit-profile-year').value.trim();
+  const bio = document.getElementById('edit-profile-bio').value.trim();
+  const photo = document.getElementById('edit-profile-photo').value.trim();
+  
+  if (!name || !phone || !college || !dept || !year) {
+    showNotification("Please fill in all required fields.");
+    return;
+  }
+  
+  showLoading(true);
+  try {
+    currentUser.fullName = name;
+    currentUser.phoneNumber = phone;
+    currentUser.college = college;
+    currentUser.department = dept;
+    currentUser.year = year;
+    currentUser.bio = bio;
+    currentUser.profilePhoto = photo;
+    currentUser.lastLogin = new Date().toISOString();
+    
+    // Save to Firestore
+    await firebase.firestore().collection('users').doc(currentUser.uid).set(currentUser);
+    
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    updateUIDisplays();
+    closeModal('comp-edit-profile-modal');
+    showNotification("Profile updated successfully!");
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    showNotification(`Failed to save changes: ${error.message}`);
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function logoutUser() {
+  showLoading(true);
+  try {
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+      await firebase.auth().signOut();
+    }
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    
+    // Reset login steps visibility
+    document.getElementById('auth-step-google').style.display = 'block';
+    document.getElementById('auth-step-onboarding').style.display = 'none';
+    document.getElementById('auth-main-title').textContent = 'CampusConnect';
+    document.getElementById('auth-sub-title').textContent = 'Sign in with your student Google account to get started';
+    
+    showNotification("Logged out successfully.");
+    navigateTo('login');
+  } catch (error) {
+    console.error("Logout error:", error);
+    showNotification("Error logging out.");
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function deleteUserAccount() {
+  if (!confirm("Are you sure you want to permanently delete your CampusConnect student account? This action cannot be undone.")) {
+    return;
+  }
+  showLoading(true);
+  try {
+    const user = firebase.auth().currentUser;
+    if (user) {
+      // 1. Delete document from Firestore
+      await firebase.firestore().collection('users').doc(user.uid).delete();
+      
+      // 2. Delete Auth account
+      await user.delete();
+    }
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    closeModal('comp-edit-profile-modal');
+    
+    document.getElementById('auth-step-google').style.display = 'block';
+    document.getElementById('auth-step-onboarding').style.display = 'none';
+    document.getElementById('auth-main-title').textContent = 'CampusConnect';
+    document.getElementById('auth-sub-title').textContent = 'Sign in with your student Google account to get started';
+    
+    showNotification("Account permanently deleted.");
+    navigateTo('login');
+  } catch (error) {
+    console.error("Delete account error:", error);
+    showNotification(`Delete failed: ${error.message}. Please re-authenticate and try again.`);
+  } finally {
+    showLoading(false);
+  }
+}
+
+function showLoading(active) {
+  const overlay = document.getElementById('auth-loading-overlay');
+  if (overlay) {
+    overlay.style.display = active ? 'flex' : 'none';
+  }
+}
+
+async function submitCustomGoogleAccount() {
+  const email = document.getElementById('google-email-input').value.trim();
+  const name = document.getElementById('google-name-input').value.trim();
+  
+  if (!email || !email.includes('@')) {
+    showNotification('Please enter a valid Google email.');
+    return;
+  }
+  if (!name) {
+    showNotification('Please enter your name.');
+    return;
+  }
+  
+  closeModal('comp-google-modal');
+  showLoading(true);
+  
+  const mockUser = {
+    uid: "mock_" + btoa(email).replace(/=/g, ""),
+    displayName: name,
+    email: email,
+    photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`,
+    phoneNumber: ""
   };
   
-  localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  setTimeout(async () => {
+    await processUserSignIn(mockUser);
+    showLoading(false);
+  }, 800);
+}
+
+function openFirebaseConfigModal() {
+  const saved = localStorage.getItem('cc_firebase_config');
+  if (saved) {
+    try {
+      const config = JSON.parse(saved);
+      document.getElementById('fb-config-apikey').value = config.apiKey || "";
+      document.getElementById('fb-config-domain').value = config.authDomain || "";
+      document.getElementById('fb-config-projectid').value = config.projectId || "";
+      document.getElementById('fb-config-appid').value = config.appId || "";
+    } catch(e) {}
+  }
+  document.getElementById('comp-config-modal').classList.add('active');
+}
+
+function saveFirebaseConfig() {
+  const apiKey = document.getElementById('fb-config-apikey').value.trim();
+  const authDomain = document.getElementById('fb-config-domain').value.trim();
+  const projectId = document.getElementById('fb-config-projectid').value.trim();
+  const appId = document.getElementById('fb-config-appid').value.trim();
   
-  // Update profile headers
-  document.querySelectorAll('.profile-name').forEach(el => el.textContent = currentUser.name);
-  document.querySelectorAll('.profile-email').forEach(el => el.textContent = currentUser.email);
-  document.querySelectorAll('.profile-avatar-large').forEach(el => el.textContent = currentUser.initials);
-
-  // Store in cloud database registered users list
-  const userExists = users.some(u => u.phone === currentUser.phone);
-  if (!userExists) {
-    users.push(currentUser);
-    saveToBin(); // Sync database
+  if (!apiKey || !authDomain || !projectId || !appId) {
+    showNotification("Please fill in all configuration fields.");
+    return;
   }
-
-  showNotification('Profile registered successfully!');
-  navigateTo('home');
+  
+  const config = {
+    apiKey,
+    authDomain,
+    projectId,
+    storageBucket: `${projectId}.appspot.com`,
+    messagingSenderId: "1234567890",
+    appId
+  };
+  
+  localStorage.setItem('cc_firebase_config', JSON.stringify(config));
+  showNotification("Firebase config saved! Reloading...");
+  setTimeout(() => {
+    window.location.reload();
+  }, 1000);
 }
 
-function resetAuthStep() {
-  document.getElementById('auth-step-mobile').style.display = 'block';
-  document.getElementById('auth-step-otp').style.display = 'none';
-  document.getElementById('auth-step-onboarding').style.display = 'none';
-  document.getElementById('auth-main-title').textContent = 'CampusConnect';
-  document.getElementById('auth-sub-title').textContent = 'Enter your mobile number to sign in or register';
-}
+window.submitCustomGoogleAccount = submitCustomGoogleAccount;
+window.openFirebaseConfigModal = openFirebaseConfigModal;
+window.saveFirebaseConfig = saveFirebaseConfig;
 
-window.sendMobileOtp = sendMobileOtp;
-window.verifyMobileOtp = verifyMobileOtp;
-window.completeOnboarding = completeOnboarding;
-window.resetAuthStep = resetAuthStep;
-
-// Google Official Credentials Callback Handler
-function handleGoogleCredentialResponse(response) {
-  try {
-    const base64Url = response.credential.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    const profile = JSON.parse(jsonPayload);
-    const email = profile.email;
-    const name = profile.name;
-    
-    showNotification(`Google account verified!`);
-    
-    // Check if this Google user already exists in our registered users database
-    let matchedUser = users.find(u => u.email === email);
-    if (!matchedUser) {
-      // Create new user account automatically from verified Google details
-      matchedUser = {
-        name: name,
-        email: email,
-        college: "SRM University",
-        department: "CSE",
-        year: "Freshman",
-        phone: "",
-        initials: name.split(' ').map(n=>n[0]).join('').toUpperCase()
-      };
-      users.push(matchedUser);
-      saveToBin();
-    }
-    
-    currentUser = matchedUser;
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-
-    // Update profile displays
-    document.querySelectorAll('.profile-name').forEach(el => el.textContent = currentUser.name);
-    document.querySelectorAll('.profile-email').forEach(el => el.textContent = currentUser.email);
-    document.querySelectorAll('.profile-avatar-large').forEach(el => el.textContent = currentUser.initials);
-
-    navigateTo('home');
-  } catch (err) {
-    console.error("Google login failed:", err);
-    showNotification("Google verification failed.");
-  }
-}
+window.handleGoogleSignIn = handleGoogleSignIn;
 window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
+window.openEditProfileModal = openEditProfileModal;
+window.submitEditProfile = submitEditProfile;
+window.logoutUser = logoutUser;
+window.deleteUserAccount = deleteUserAccount;
+window.completeOnboarding = completeOnboarding;
 
 // Shared Real-Time JSON Database Sync Helpers (using api.npoint.io)
 let binId = null;

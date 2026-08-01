@@ -22,8 +22,8 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   void initState() {
     super.initState();
     final user = ref.read(authProvider).userModel;
-    _nameController = TextEditingController(text: user?.name ?? '');
-    _phoneController = TextEditingController(text: user?.phone ?? '');
+    _nameController = TextEditingController(text: user?.fullName ?? '');
+    _phoneController = TextEditingController(text: user?.phoneNumber ?? '');
     _bioController = TextEditingController(text: user?.bio ?? '');
   }
 
@@ -42,9 +42,9 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
     if (_formKey.currentState!.validate()) {
       final updatedUser = UserModel(
         uid: user.uid,
-        name: _nameController.text.trim(),
+        fullName: _nameController.text.trim(),
         email: user.email,
-        phone: _phoneController.text.trim(),
+        phoneNumber: _phoneController.text.trim(),
         college: user.college,
         department: user.department,
         year: user.year,
@@ -52,8 +52,9 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         bio: _bioController.text.trim(),
         createdAt: user.createdAt,
         lastLogin: DateTime.now(),
-        verified: user.verified,
+        authenticationProvider: user.authenticationProvider,
         role: user.role,
+        status: user.status,
       );
 
       final success = await ref.read(authProvider.notifier).updateProfile(updatedUser);
@@ -74,7 +75,6 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final theme = Theme.of(context);
-
     final user = authState.userModel;
 
     return Scaffold(
@@ -92,16 +92,18 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         ),
         centerTitle: true,
         actions: [
-          if (!_isEditing)
-            IconButton(
-              icon: Icon(Icons.edit_outlined, color: theme.colorScheme.primary),
-              onPressed: () => setState(() => _isEditing = true),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.check_rounded, color: Colors.green),
-              onPressed: _saveProfile,
-            ),
+          if (user != null) ...[
+            if (!_isEditing)
+              IconButton(
+                icon: Icon(Icons.edit_outlined, color: theme.colorScheme.primary),
+                onPressed: () => setState(() => _isEditing = true),
+              )
+            else
+              IconButton(
+                icon: const Icon(Icons.check_rounded, color: Colors.green),
+                onPressed: _saveProfile,
+              ),
+          ]
         ],
       ),
       body: user == null
@@ -120,24 +122,29 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                           CircleAvatar(
                             radius: 40,
                             backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                            child: Text(
-                              user.initials,
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.black,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
+                            backgroundImage: user.profilePhoto.isNotEmpty
+                                ? NetworkImage(user.profilePhoto)
+                                : null,
+                            child: user.profilePhoto.isEmpty
+                                ? Text(
+                                    user.initials,
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.black,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  )
+                                : null,
                           ),
                           const SizedBox(height: 12),
                           if (!_isEditing) ...[
                             Text(
-                              user.name,
+                              user.fullName,
                               style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.extrabold),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${user.department} Department • ${user.year}',
+                              '${user.department.isNotEmpty ? '${user.department} Department • ' : ''}${user.year}',
                               style: TextStyle(color: theme.colorScheme.onBackground.withOpacity(0.5), fontSize: 13),
                             ),
                           ] else ...[
@@ -168,8 +175,8 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
                         decoration: const InputDecoration(
-                          hintText: 'Contact Phone Number',
-                          prefixIcon: Icon(Icons.phone_outlined),
+                           hintText: 'Contact Phone Number',
+                           prefixIcon: Icon(Icons.phone_outlined),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -226,24 +233,60 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Log Out Card
+                    // Log Out & Delete Card
                     Container(
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: theme.colorScheme.onBackground.withOpacity(0.05)),
                       ),
-                      child: _buildSettingItem(
-                        context,
-                        icon: Icons.logout_rounded,
-                        iconColor: Colors.red,
-                        title: 'Logout',
-                        onTap: () async {
-                          await ref.read(authProvider.notifier).logout();
-                          if (mounted) {
-                            context.go('/login');
-                          }
-                        },
+                      child: Column(
+                        children: [
+                          _buildSettingItem(
+                            context,
+                            icon: Icons.logout_rounded,
+                            iconColor: Colors.red,
+                            title: 'Logout',
+                            onTap: () async {
+                              await ref.read(authProvider.notifier).logout();
+                              if (mounted) {
+                                context.go('/login');
+                              }
+                            },
+                          ),
+                          const Divider(height: 1),
+                          _buildSettingItem(
+                            context,
+                            icon: Icons.delete_forever_rounded,
+                            iconColor: Colors.red,
+                            title: 'Delete Account',
+                            onTap: () async {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Delete Account'),
+                                  content: const Text('Are you sure you want to permanently delete your student account?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirm == true) {
+                                final success = await ref.read(authProvider.notifier).deleteAccount();
+                                if (success && mounted) {
+                                  context.go('/login');
+                                }
+                              }
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ],

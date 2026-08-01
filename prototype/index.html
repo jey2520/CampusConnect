@@ -221,24 +221,11 @@
                     </div>
                     <div class="auth-title-section">
                       <h2 id="auth-main-title">CampusConnect</h2>
-                      <p id="auth-sub-title">Enter your mobile number to sign in or register</p>
+                      <p id="auth-sub-title">Sign in with your student Google account to get started</p>
                     </div>
                     <div class="auth-form">
-                      <!-- Step 1: Mobile Input -->
-                      <div id="auth-step-mobile">
-                        <div class="form-group">
-                          <label>Mobile Number</label>
-                          <div class="input-wrapper">
-                            <span class="material-icons-round input-icon">phone</span>
-                            <input type="tel" id="login-phone-input" placeholder="Enter 10-digit number">
-                          </div>
-                        </div>
-                        <button class="btn-app-primary ripple" onclick="sendMobileOtp()" style="margin-top: 16px;">Send OTP</button>
-                        
-                        <div class="auth-divider">
-                          <span>or continue with</span>
-                        </div>
-                        
+                      <!-- Step 1: Google Login Button -->
+                      <div id="auth-step-google" style="text-align: center;">
                         <!-- Official Google Sign-In SDK Integration -->
                         <div id="g_id_onload"
                              data-client_id="859134789502-jka78f23jfb.apps.googleusercontent.com"
@@ -257,28 +244,38 @@
                              data-logo_alignment="left"
                              style="display: flex; justify-content: center; width: 100%; margin-top: 10px;">
                         </div>
-                      </div>
 
-                      <!-- Step 2: OTP Input -->
-                      <div id="auth-step-otp" style="display:none;">
-                        <div class="form-group">
-                          <label>Enter 6-Digit OTP</label>
-                          <div class="input-wrapper">
-                            <span class="material-icons-round input-icon">lock</span>
-                            <input type="number" id="login-otp-input" placeholder="e.g. 123456">
-                          </div>
+                        <div class="auth-divider" style="margin: 16px 0;">
+                          <span>or use popup</span>
                         </div>
-                        <button class="btn-app-primary ripple" onclick="verifyMobileOtp()" style="margin-top: 16px;">Verify OTP</button>
-                        <button class="btn-app-secondary ripple" onclick="resetAuthStep()" style="margin-top: 8px; width: 100%;">Back</button>
+
+                        <button class="btn-app-primary ripple" onclick="handleGoogleSignIn()" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; border-radius: 24px; font-weight: 600; margin-top: 8px;">
+                          <svg class="google-logo" viewBox="0 0 24 24" width="18" height="18" style="fill: white;"><path fill="#ffffff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#ffffff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#ffffff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#ffffff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                          <span>Continue with Google</span>
+                        </button>
                       </div>
 
-                      <!-- Step 3: Profile Onboarding -->
+                      <!-- Step 2: Profile Onboarding -->
                       <div id="auth-step-onboarding" style="display:none; text-align: left;">
                         <div class="form-group">
                           <label>Full Name</label>
                           <div class="input-wrapper">
                             <span class="material-icons-round input-icon">person</span>
-                            <input type="text" id="onboard-name-input" placeholder="Your Full Name">
+                            <input type="text" id="onboard-name-input" placeholder="Your Full Name" readonly style="opacity: 0.7; background: var(--border-light);">
+                          </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 12px;">
+                          <label>Email Address</label>
+                          <div class="input-wrapper">
+                            <span class="material-icons-round input-icon">email</span>
+                            <input type="text" id="onboard-email-input" placeholder="Your Email Address" readonly style="opacity: 0.7; background: var(--border-light);">
+                          </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 12px;">
+                          <label>Phone Number</label>
+                          <div class="input-wrapper">
+                            <span class="material-icons-round input-icon">phone</span>
+                            <input type="tel" id="onboard-phone-input" placeholder="e.g. +91 98765 43210">
                           </div>
                         </div>
                         <div class="form-group" style="margin-top: 12px;">
@@ -298,6 +295,20 @@
                           <div class="input-wrapper">
                             <span class="material-icons-round input-icon">book</span>
                             <input type="text" id="onboard-dept-input" placeholder="e.g. CSE">
+                          </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 12px;">
+                          <label>Year of Study</label>
+                          <div class="input-wrapper">
+                            <span class="material-icons-round input-icon">event</span>
+                            <input type="text" id="onboard-year-input" placeholder="e.g. Freshman">
+                          </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 12px;">
+                          <label>Bio (Optional)</label>
+                          <div class="input-wrapper">
+                            <span class="material-icons-round input-icon">description</span>
+                            <input type="text" id="onboard-bio-input" placeholder="e.g. CS Student, tech enthusiast">
                           </div>
                         </div>
                         <button class="btn-app-primary ripple" onclick="completeOnboarding()" style="margin-top: 20px;">Complete Profile</button>
@@ -881,6 +892,13 @@
 
                     <!-- Settings List Card Layout -->
                     <div class="settings-group-card">
+                      <div class="settings-item" onclick="openEditProfileModal()">
+                        <div class="settings-item-left">
+                          <span class="material-icons-round text-primary">edit</span>
+                          <span>Edit Profile</span>
+                        </div>
+                        <span class="material-icons-round text-gray">chevron_right</span>
+                      </div>
                       <div class="settings-item" onclick="navigateTo('tracking')">
                         <div class="settings-item-left">
                           <span class="material-icons-round text-success">local_shipping</span>
@@ -1223,25 +1241,111 @@
                 <span class="snackbar-text" id="snackbar-msg">Notifications activated.</span>
               </div>
 
-              <!-- Dynamic Component: Google Account Chooser Modal -->
-              <div class="modal-overlay" id="comp-google-modal">
-                <div class="modal-card" style="padding: 24px; max-width: 320px;">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google Logo" style="height:20px; margin: 8px auto 16px auto; display:block;">
-                  <h4 style="font-size: 13px; font-weight:600; color:var(--text-main); margin-bottom: 16px; text-align: center;">Sign in with Google</h4>
+              <!-- Dynamic Component: Edit Profile Modal -->
+              <div class="modal-overlay" id="comp-edit-profile-modal">
+                <div class="modal-card" style="padding: 24px; max-width: 300px; border-radius: 20px;">
+                  <span class="material-icons-round text-primary" style="font-size: 36px; margin-bottom: 8px; color: var(--primary); display:block; text-align:center;">edit</span>
+                  <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; text-align: center;">Edit Profile</h3>
+                  <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 16px; text-align: center; line-height: 1.4;">Update your student profile in Firestore.</p>
                   
-                  <div style="display:flex; flex-direction:column; gap:10px; width:100%; margin-bottom:16px;">
+                  <div style="display:flex; flex-direction:column; gap:10px; width:100%; margin-bottom:16px; text-align: left; max-height: 240px; overflow-y: auto; padding-right: 4px;">
                     <div style="text-align:left;">
-                      <label style="font-size:10px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Google Email</label>
-                      <input type="email" id="google-email-input" placeholder="name@gmail.com" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Full Name</label>
+                      <input type="text" id="edit-profile-name" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
                     </div>
                     <div style="text-align:left;">
-                      <label style="font-size:10px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Full Name</label>
-                      <input type="text" id="google-name-input" placeholder="Your Name" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Phone Number</label>
+                      <input type="tel" id="edit-profile-phone" placeholder="e.g. +91 98765 43210" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">College</label>
+                      <input type="text" id="edit-profile-college" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Department</label>
+                      <input type="text" id="edit-profile-dept" placeholder="e.g. CSE" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Year of Study</label>
+                      <input type="text" id="edit-profile-year" placeholder="e.g. Sophomore" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Bio (Optional)</label>
+                      <input type="text" id="edit-profile-bio" placeholder="Bio description" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Profile Photo URL</label>
+                      <input type="text" id="edit-profile-photo" placeholder="https://..." style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
                     </div>
                   </div>
                   
-                  <button class="btn-app-primary" onclick="submitCustomGoogleAccount()" style="padding:12px; font-size:13px; width:100%; margin-bottom:10px; border-radius:10px;">Sign In</button>
-                  <button class="btn-app-secondary" onclick="closeModal('comp-google-modal')" style="padding:12px; font-size:13px; width:100%; border-radius:10px;">Cancel</button>
+                  <button class="btn-app-primary" onclick="submitEditProfile()" style="padding:10px; font-size:12px; width:100%; margin-bottom:8px; border-radius:8px;">Save Changes</button>
+                  <button class="btn-app-secondary" onclick="closeModal('comp-edit-profile-modal')" style="padding:10px; font-size:12px; width:100%; border-radius:8px; margin-bottom:8px;">Cancel</button>
+                  <button class="btn-app-secondary" onclick="deleteUserAccount()" style="padding:10px; font-size:12px; width:100%; border-radius:8px; border: 1px solid var(--error); color: var(--error); background: transparent;">Delete Account</button>
+                </div>
+              </div>
+
+              <!-- Auth Loading Overlay -->
+              <div id="auth-loading-overlay" class="modal-overlay" style="z-index: 9999; display: none; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+                <div style="text-align: center; color: white;">
+                  <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 16px auto;"></div>
+                  <p style="font-size: 13px; font-weight: 600; letter-spacing: 0.5px;">Authenticating with Google...</p>
+                </div>
+              </div>
+
+              <!-- Dynamic Component: Mock Google Account Chooser Modal -->
+              <div class="modal-overlay" id="comp-google-modal">
+                <div class="modal-card" style="padding: 24px; max-width: 300px; border-radius: 20px;">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google Logo" style="height:18px; margin: 4px auto 12px auto; display:block;">
+                  <h4 style="font-size: 14px; font-weight:700; color:var(--text-main); margin-bottom: 6px; text-align: center;">Sign in with Google</h4>
+                  <p style="font-size: 10px; color: var(--text-secondary); margin-bottom: 16px; text-align: center; line-height: 1.4;">Enter test credentials to simulate Google verification instantly.</p>
+                  
+                  <div style="display:flex; flex-direction:column; gap:10px; width:100%; margin-bottom:16px; text-align: left;">
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Google Email</label>
+                      <input type="email" id="google-email-input" placeholder="student@srmist.edu.in" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Full Name</label>
+                      <input type="text" id="google-name-input" placeholder="Your Name" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                  </div>
+                  
+                  <button class="btn-app-primary" onclick="submitCustomGoogleAccount()" style="padding:10px; font-size:12px; width:100%; margin-bottom:8px; border-radius:8px;">Sign In</button>
+                  <button class="btn-app-secondary" onclick="closeModal('comp-google-modal')" style="padding:10px; font-size:12px; width:100%; border-radius:8px;">Cancel</button>
+                </div>
+              </div>
+
+              <!-- Dynamic Component: Firebase Config Panel Overlay -->
+              <div class="modal-overlay" id="comp-config-modal">
+                <div class="modal-card" style="padding: 24px; max-width: 300px; border-radius: 20px;">
+                  <span class="material-icons-round text-primary" style="font-size: 36px; margin-bottom: 8px; color: var(--primary); display:block; text-align:center;">settings</span>
+                  <h3 style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; text-align: center;">Connect Firebase</h3>
+                  <p style="font-size: 10px; color: var(--text-secondary); margin-bottom: 16px; text-align: center; line-height: 1.4;">
+                    Configure your Firebase keys to route real Google Sign-In popups in production.
+                  </p>
+                  
+                  <div style="display:flex; flex-direction:column; gap:8px; width:100%; margin-bottom:16px; text-align: left; max-height: 180px; overflow-y: auto; padding-right: 4px;">
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:2px;">API Key</label>
+                      <input type="text" id="fb-config-apikey" placeholder="AIzaSy..." style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-light); font-size:11px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:2px;">Auth Domain</label>
+                      <input type="text" id="fb-config-domain" placeholder="project-id.firebaseapp.com" style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-light); font-size:11px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:2px;">Project ID</label>
+                      <input type="text" id="fb-config-projectid" placeholder="project-id" style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-light); font-size:11px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                    <div style="text-align:left;">
+                      <label style="font-size:9px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:2px;">App ID</label>
+                      <input type="text" id="fb-config-appid" placeholder="1:1234:web:abcd" style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-light); font-size:11px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                  </div>
+                  
+                  <button class="btn-app-primary" onclick="saveFirebaseConfig()" style="width: 100%; padding: 10px; font-size: 12px; border-radius: 8px; margin-bottom:8px;">Save & Reload</button>
+                  <button class="btn-app-secondary" onclick="closeModal('comp-config-modal')" style="width: 100%; padding: 8px; font-size: 11px; border-radius: 8px;">Cancel</button>
                 </div>
               </div>
 
@@ -1451,12 +1555,13 @@
     Exit Full Screen
   </button>
 
-  <!-- Firebase App and Auth SDKs for Real SMS verification -->
+  <!-- Firebase App, Auth, and Firestore SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   
-  <!-- Recaptcha Container for Firebase Phone Verification -->
-  <div id="recaptcha-container" style="display:none;"></div>
+  <!-- Official Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <!-- App Logic script -->
   <script src="app.js"></script>
