@@ -52,6 +52,7 @@ class ProductState {
   final List<String> favoriteIds;
   final ProductFilter filter;
   final bool isLoading;
+  final double uploadProgress;
   final String? error;
 
   ProductState({
@@ -60,6 +61,7 @@ class ProductState {
     required this.favoriteIds,
     required this.filter,
     this.isLoading = false,
+    this.uploadProgress = 0.0,
     this.error,
   });
 
@@ -69,6 +71,7 @@ class ProductState {
     List<String>? favoriteIds,
     ProductFilter? filter,
     bool? isLoading,
+    double? uploadProgress,
     String? error,
   }) {
     return ProductState(
@@ -77,6 +80,7 @@ class ProductState {
       favoriteIds: favoriteIds ?? this.favoriteIds,
       filter: filter ?? this.filter,
       isLoading: isLoading ?? this.isLoading,
+      uploadProgress: uploadProgress ?? this.uploadProgress,
       error: error,
     );
   }
@@ -185,19 +189,32 @@ class ProductNotifier extends StateNotifier<ProductState> {
     required String category,
     required String college,
     required String description,
-    required File imageFile,
+    required List<File> imageFiles,
     required String sellerName,
     required String sellerInitials,
   }) async {
     if (_currentUid == null) return false;
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, uploadProgress: 0.0);
     try {
       final itemId = const Uuid().v4();
-      
-      // Upload image
-      final ref = _storage.ref().child('items').child(itemId).child('primary.jpg');
-      final uploadTask = await ref.putFile(imageFile);
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      final List<String> imageUrls = [];
+
+      for (int i = 0; i < imageFiles.length; i++) {
+        final file = imageFiles[i];
+        final ref = _storage.ref().child('product_images').child(_currentUid!).child(itemId).child('image_$i.jpg');
+        
+        final uploadTask = ref.putFile(file);
+        
+        // Listen to progress events to update state
+        uploadTask.snapshotEvents.listen((event) {
+          final progress = (event.bytesTransferred / event.totalBytes) / imageFiles.length + (i / imageFiles.length);
+          state = state.copyWith(uploadProgress: progress);
+        });
+
+        final snapshot = await uploadTask;
+        final downloadUrl = await snapshot.ref.getDownloadURL();
+        imageUrls.add(downloadUrl);
+      }
 
       final newProduct = ProductModel(
         id: itemId,
@@ -208,8 +225,8 @@ class ProductNotifier extends StateNotifier<ProductState> {
         category: category,
         college: college,
         description: description,
-        image: downloadUrl,
-        images: [downloadUrl],
+        image: imageUrls.isNotEmpty ? imageUrls.first : '',
+        images: imageUrls,
         sellerUid: _currentUid!,
         sellerName: sellerName,
         sellerRating: '5.0',
@@ -220,10 +237,10 @@ class ProductNotifier extends StateNotifier<ProductState> {
       );
 
       await _firestore.collection('items').doc(itemId).set(newProduct.toMap());
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false, uploadProgress: 1.0);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: e.toString(), uploadProgress: 0.0);
       return false;
     }
   }

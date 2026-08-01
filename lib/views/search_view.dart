@@ -169,13 +169,15 @@ class _SearchViewState extends ConsumerState<SearchView> {
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
         elevation: 0.5,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.colorScheme.onBackground),
-          onPressed: () {
-            ref.read(productProvider.notifier).updateFilter(ProductFilter());
-            context.pop();
-          },
-        ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.colorScheme.onBackground),
+                onPressed: () {
+                  ref.read(productProvider.notifier).updateFilter(ProductFilter());
+                  context.pop();
+                },
+              )
+            : null,
         title: Container(
           height: 44,
           decoration: BoxDecoration(
@@ -233,7 +235,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 120),
                   itemCount: productState.filteredProducts.length,
                   itemBuilder: (context, index) {
                     final product = productState.filteredProducts[index];

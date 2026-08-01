@@ -16,10 +16,12 @@ class ChatsView extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
         elevation: 0.5,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.colorScheme.onBackground),
-          onPressed: () => context.go('/home'),
-        ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.colorScheme.onBackground),
+                onPressed: () => context.go('/home'),
+              )
+            : null,
         title: Text(
           'Messages',
           style: TextStyle(fontWeight: FontWeight.extrabold, color: theme.colorScheme.onBackground),
@@ -43,7 +45,7 @@ class ChatsView extends ConsumerWidget {
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.only(top: 12, bottom: 120),
                   itemCount: chatState.activeChats.length,
                   itemBuilder: (context, index) {
                     final chat = chatState.activeChats[index];

@@ -2,12 +2,13 @@
 
 // Firebase Config Integration for Real SMS Verification
 let firebaseConfig = {
-  apiKey: "AIzaSyAsB123-placeholder-key-for-test",
-  authDomain: "campusconnect-3e3e0.firebaseapp.com",
-  projectId: "campusconnect-3e3e0",
-  storageBucket: "campusconnect-3e3e0.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
+  apiKey: "AIzaSyCQVkmOR1jZBw4DZFWYcLVY6nzwAeAb_eM",
+  authDomain: "campusconnect-f17e2.firebaseapp.com",
+  projectId: "campusconnect-f17e2",
+  storageBucket: "campusconnect-f17e2.firebasestorage.app",
+  messagingSenderId: "558848717390",
+  appId: "1:558848717390:web:e52c0cddf4d5d831ed091f",
+  measurementId: "G-WKNX90QZQ2"
 };
 
 // Check if developer has connected their custom keys in the app settings panel
@@ -673,27 +674,52 @@ function logoutUser() {
 // 6. SELL: ADD LISTING
 // ==========================================================================
 
+let uploadedPhotoURL = null;
+
 function triggerRealPhotoUpload() {
   document.getElementById('product-photo-input').click();
 }
 
-function handleRealPhotoUpload(event) {
+async function handleRealPhotoUpload(event) {
   const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      uploadedPhotoData = e.target.result;
-      const preview = document.getElementById('upload-preview');
+  if (!file) return;
+
+  // Show local preview immediately for instant UX response
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const preview = document.getElementById('upload-preview');
+    if (preview) {
       preview.style.display = 'grid';
       preview.innerHTML = `
         <div class="preview-thumb" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px;">
-          <img src="${uploadedPhotoData}" alt="Uploaded photo" style="width: 100%; height: 100%; object-fit: cover;">
+          <img src="${e.target.result}" alt="Uploaded photo" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
       `;
-      showNotification('Photo uploaded successfully!');
-    };
-    reader.readAsDataURL(file);
+    }
+  };
+  reader.readAsDataURL(file);
+
+  // Upload to Firebase Storage in the background
+  try {
+    showNotification('Uploading image to cloud storage...');
+    const path = `items/${Date.now()}_${file.name}`;
+    uploadedPhotoURL = await uploadFileToFirebase(file, path);
+    showNotification('Image uploaded to Firebase Storage!');
+  } catch (error) {
+    console.error("Firebase Storage upload failed:", error);
+    showNotification(`Upload failed: ${error.message}`);
   }
+}
+
+async function uploadFileToFirebase(file, path) {
+  if (typeof firebase === 'undefined' || !firebase.storage) {
+    throw new Error("Firebase Storage SDK is not loaded.");
+  }
+  const storageRef = firebase.storage().ref();
+  const fileRef = storageRef.child(path);
+  const snapshot = await fileRef.put(file);
+  const downloadURL = await snapshot.ref.getDownloadURL();
+  return downloadURL;
 }
 
 function submitNewListing() {
@@ -712,7 +738,7 @@ function submitNewListing() {
 
   // Create new listing object
   const newId = 'p' + (products.length + 1);
-  const image = uploadedPhotoData || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"><rect width="100%" height="100%" fill="%238B7CFF"/><text x="50%" y="55%" font-family="Poppins" font-weight="bold" font-size="14" fill="white" text-anchor="middle">Campus Item</text></svg>';
+  const image = uploadedPhotoURL || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"><rect width="100%" height="100%" fill="%238B7CFF"/><text x="50%" y="55%" font-family="Poppins" font-weight="bold" font-size="14" fill="white" text-anchor="middle">Campus Item</text></svg>';
 
   const newItem = {
     id: newId,
@@ -724,7 +750,7 @@ function submitNewListing() {
     college,
     description: desc,
     image,
-    seller: { name: currentUser.name, rating: '5.0', college: currentUser.college, initials: currentUser.initials }
+    seller: { name: currentUser.fullName || currentUser.name, rating: '5.0', college: currentUser.college, initials: currentUser.initials }
   };
 
   // Push to products database
@@ -750,7 +776,7 @@ function submitNewListing() {
   document.getElementById('add-price').value = '';
   document.getElementById('add-desc').value = '';
   document.getElementById('upload-preview').style.display = 'none';
-  uploadedPhotoData = null;
+  uploadedPhotoURL = null;
 
   showSuccessDialog('Success! Your listing has been published to the student catalog.');
   navigateTo('home');
@@ -1490,18 +1516,6 @@ window.addEventListener('DOMContentLoaded', () => {
   
   updateUIDisplays();
 
-  // Hide the official Google One-Tap/Sign-In elements if we are in demo configuration to avoid 404 client ID errors
-  if (firebaseConfig.apiKey.includes("placeholder")) {
-    const gIdOnload = document.getElementById('g_id_onload');
-    if (gIdOnload) gIdOnload.style.display = 'none';
-    
-    const gIdSignin = document.querySelector('.g_id_signin');
-    if (gIdSignin) gIdSignin.style.display = 'none';
-    
-    const divider = document.querySelector('.auth-divider');
-    if (divider) divider.style.display = 'none';
-  }
-
   // Initialize Auth state observer for Persistent Login / Session Restore
   if (typeof firebase !== 'undefined' && firebase.auth) {
     firebase.auth().onAuthStateChanged(async (user) => {
@@ -1604,11 +1618,25 @@ function updateUIDisplays() {
 window.updateUIDisplays = updateUIDisplays;
 
 async function handleGoogleSignIn() {
-  if (firebaseConfig.apiKey.includes("placeholder")) {
-    document.getElementById('comp-google-modal').classList.add('active');
+  const isDemoConfig = typeof firebaseConfig === 'undefined' || firebaseConfig.apiKey.includes("placeholder");
+  
+  if (isDemoConfig) {
+    showLoading(true);
+    setTimeout(() => {
+      // Simulate selecting a mock Google account when the API keys are placeholders
+      const mockGoogleUser = {
+        uid: "google_student_12345",
+        displayName: "Jeyashanth",
+        email: "jeyashanth@srmist.edu.in",
+        photoURL: "https://api.dicebear.com/7.x/initials/svg?seed=Jeyashanth",
+        phoneNumber: "+91 98765 43210"
+      };
+      processUserSignIn(mockGoogleUser);
+      showLoading(false);
+    }, 1000);
     return;
   }
-  
+
   if (typeof firebase === 'undefined' || !firebase.auth) {
     showNotification("Firebase Auth SDK is not loaded.");
     return;
@@ -1645,7 +1673,6 @@ async function handleGoogleCredentialResponse(response) {
     showLoading(false);
   }
 }
-
 async function processUserSignIn(user) {
   try {
     const userDocRef = firebase.firestore().collection('users').doc(user.uid);
@@ -1663,7 +1690,7 @@ async function processUserSignIn(user) {
       currentUser = userData;
       localStorage.setItem('currentUser', JSON.stringify(currentUser));
       updateUIDisplays();
-      showNotification(`Welcome back, ${currentUser.fullName}!`);
+      showNotification(`Welcome back, ${currentUser.fullName || currentUser.name}!`);
       navigateTo('home');
     } else {
       // New user -> Onboarding Complete Profile redirect!
@@ -1865,81 +1892,24 @@ function showLoading(active) {
     overlay.style.display = active ? 'flex' : 'none';
   }
 }
-
-async function submitCustomGoogleAccount() {
-  const email = document.getElementById('google-email-input').value.trim();
-  const name = document.getElementById('google-name-input').value.trim();
+async function uploadProfilePhoto(event) {
+  const file = event.target.files[0];
+  if (!file || !currentUser) return;
   
-  if (!email || !email.includes('@')) {
-    showNotification('Please enter a valid Google email.');
-    return;
-  }
-  if (!name) {
-    showNotification('Please enter your name.');
-    return;
-  }
-  
-  closeModal('comp-google-modal');
   showLoading(true);
-  
-  const mockUser = {
-    uid: "mock_" + btoa(email).replace(/=/g, ""),
-    displayName: name,
-    email: email,
-    photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`,
-    phoneNumber: ""
-  };
-  
-  setTimeout(async () => {
-    await processUserSignIn(mockUser);
+  try {
+    showNotification('Uploading profile photo...');
+    const path = `users/${currentUser.uid}/profile_${Date.now()}`;
+    const downloadURL = await uploadFileToFirebase(file, path);
+    document.getElementById('edit-profile-photo').value = downloadURL;
+    showNotification('Profile photo uploaded successfully!');
+  } catch (error) {
+    console.error("Profile photo upload failed:", error);
+    showNotification(`Upload failed: ${error.message}`);
+  } finally {
     showLoading(false);
-  }, 800);
-}
-
-function openFirebaseConfigModal() {
-  const saved = localStorage.getItem('cc_firebase_config');
-  if (saved) {
-    try {
-      const config = JSON.parse(saved);
-      document.getElementById('fb-config-apikey').value = config.apiKey || "";
-      document.getElementById('fb-config-domain').value = config.authDomain || "";
-      document.getElementById('fb-config-projectid').value = config.projectId || "";
-      document.getElementById('fb-config-appid').value = config.appId || "";
-    } catch(e) {}
   }
-  document.getElementById('comp-config-modal').classList.add('active');
 }
-
-function saveFirebaseConfig() {
-  const apiKey = document.getElementById('fb-config-apikey').value.trim();
-  const authDomain = document.getElementById('fb-config-domain').value.trim();
-  const projectId = document.getElementById('fb-config-projectid').value.trim();
-  const appId = document.getElementById('fb-config-appid').value.trim();
-  
-  if (!apiKey || !authDomain || !projectId || !appId) {
-    showNotification("Please fill in all configuration fields.");
-    return;
-  }
-  
-  const config = {
-    apiKey,
-    authDomain,
-    projectId,
-    storageBucket: `${projectId}.appspot.com`,
-    messagingSenderId: "1234567890",
-    appId
-  };
-  
-  localStorage.setItem('cc_firebase_config', JSON.stringify(config));
-  showNotification("Firebase config saved! Reloading...");
-  setTimeout(() => {
-    window.location.reload();
-  }, 1000);
-}
-
-window.submitCustomGoogleAccount = submitCustomGoogleAccount;
-window.openFirebaseConfigModal = openFirebaseConfigModal;
-window.saveFirebaseConfig = saveFirebaseConfig;
 
 window.handleGoogleSignIn = handleGoogleSignIn;
 window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
@@ -1948,6 +1918,7 @@ window.submitEditProfile = submitEditProfile;
 window.logoutUser = logoutUser;
 window.deleteUserAccount = deleteUserAccount;
 window.completeOnboarding = completeOnboarding;
+window.uploadProfilePhoto = uploadProfilePhoto;
 
 // Shared Real-Time JSON Database Sync Helpers (using api.npoint.io)
 let binId = null;

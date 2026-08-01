@@ -82,10 +82,12 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
         elevation: 0.5,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.colorScheme.onBackground),
-          onPressed: () => context.go('/home'),
-        ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.colorScheme.onBackground),
+                onPressed: () => context.go('/home'),
+              )
+            : null,
         title: Text(
           'Student Profile',
           style: TextStyle(fontWeight: FontWeight.extrabold, color: theme.colorScheme.onBackground),
@@ -109,7 +111,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
       body: user == null
           ? const Center(child: Text('User profile loading failed.'))
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 120),
               child: Form(
                 key: _formKey,
                 child: Column(

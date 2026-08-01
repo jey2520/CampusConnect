@@ -660,17 +660,16 @@ body {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 78px;
-  background: rgba(255, 255, 255, 0.01);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  height: 84px; /* Height increased to 80-90dp equivalent */
+  background: var(--bg-card); /* Solid card background (prevents scroll overlapping visibility) */
   border-top: 1px solid var(--border-light);
   display: flex;
   justify-content: space-around;
-  align-items: center;
-  padding-bottom: 12px; /* space for iOS home indicator */
+  align-items: flex-end; /* Align all navigation items at the bottom baseline */
+  padding-bottom: 12px; /* Simulation of bottom SafeArea padding for Android/iOS */
   z-index: 15;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05); /* Subtle shadow above navigation bar */
+  box-sizing: border-box;
 }
 
 /* Bottom Tab styling */
@@ -680,59 +679,72 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
+  justify-content: flex-end;
+  color: var(--text-muted); /* Grey color unselected */
   cursor: pointer;
   transition: all var(--transition-fast);
-  padding: 4px 10px;
-  gap: 2px;
+  padding: 4px 6px;
+  gap: 4px;
+  flex: 1;
+  height: 100%;
 }
 
 .nav-item .material-icons-round {
-  font-size: 24px;
+  font-size: 24px; /* Icon size 24dp */
 }
 
 .nav-item span {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 12px; /* Label size 12-13sp */
+  font-weight: 600;
   font-family: var(--font-body);
+  color: inherit;
+  white-space: nowrap;
 }
 
 .nav-item:hover, .nav-item.active {
-  color: var(--primary);
+  color: var(--primary); /* Purple icon and Purple label selected */
 }
 
-/* Standout Add Button in nav */
+/* Standout Add Button in nav (Floating Action Button style) */
 .nav-item.nav-add {
-  transform: translateY(-14px);
   position: relative;
+  overflow: visible;
 }
 
 .add-btn-circle {
-  width: 52px;
-  height: 52px;
-  background: var(--primary);
+  position: absolute;
+  top: -28px; /* Floats slightly above the BottomAppBar with proper notch spacing */
+  width: 56px; /* Size: 56dp */
+  height: 56px;
+  background: var(--primary); /* Purple theme */
   color: white !important;
-  border-radius: 50%;
+  border-radius: 50%; /* Circular */
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform var(--transition-fast);
+  box-shadow: 0 4px 12px rgba(108, 76, 247, 0.35); /* Elevated shadow */
+  transition: all var(--transition-fast);
+  z-index: 10;
 }
 
 .add-btn-circle .material-icons-round {
-  font-size: 28px;
+  font-size: 28px; /* White "+" icon */
+  color: white;
 }
 
 .nav-item.nav-add:hover .add-btn-circle {
   background: var(--primary-hover);
-  transform: scale(1.08);
+  transform: scale(1.05) translateY(-2px);
 }
 
-.nav-add-label {
-  position: absolute;
-  bottom: -16px;
-  font-weight: 800 !important;
+.nav-item.nav-add .nav-add-label {
+  position: static; /* Remove absolute positioning */
+  font-weight: 600 !important;
+  color: var(--text-muted);
+}
+
+.nav-item.nav-add.active .nav-add-label {
+  color: var(--primary);
 }
 
 /* Header standard inside mockup */
@@ -3204,8 +3216,8 @@ body.fullscreen-app-mode .exit-fullscreen-btn {
   }
 
   .phone-bottom-nav {
-    padding-bottom: env(safe-area-inset-bottom, 8px) !important;
-    height: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: env(safe-area-inset-bottom, 12px) !important;
+    height: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 

@@ -4,117 +4,133 @@ A premium, modern, clean, minimalist mobile UI/UX application designed for unive
 
 ---
 
-## Features
-- **Multi-User Realtime Integration**: Supports unlimited simultaneous users with distinct user states.
-- **Robust Auth**: Email Registration & Login, Google Login, Session persistence, and verification logic.
-- **Student Profile**: Custom profiles detailing user's UID, college, department, year, profile image, and bio.
-- **Product Catalog**: Live item creations, edits, deletions, searches, and advanced filter metrics (condition, price range, college).
-- **Secure Image Uploads**: Automatically compresses and saves images to Firebase Storage with size-restricted policies.
-- **Realtime Chat Engine**: Instant direct messaging between buyers and sellers, online status displays, typing states, and read receipts.
-- **Live Order Tracking**: An advanced 12-second live tracking simulator with an SVG interactive transit map showing delivery steps.
-
----
-
-## Tech Stack
-- **Framework**: Flutter (Web & Mobile)
+## 🛠️ Tech Stack & Architecture
+- **Framework**: Flutter (Web, Android & iOS)
 - **State Management**: Flutter Riverpod (`flutter_riverpod`)
 - **Routing**: GoRouter (`go_router`)
+- **Authentication**: Firebase Authentication (`firebase_auth`) + Official Google Sign-In SDK
 - **Database**: Cloud Firestore (`cloud_firestore`)
-- **Authentication**: Firebase Auth (`firebase_auth`)
 - **File Storage**: Firebase Storage (`firebase_storage`)
-- **Hosting**: Firebase Hosting (available on `https://campusconnect.web.app`)
-- **Notifications**: Firebase Cloud Messaging (`firebase_messaging`)
+- **Hosting**: Firebase Hosting (live preview prototype available)
 
 ---
 
-## Getting Started
+## 🔒 Firebase Configuration & Setup Guide
 
-### Prerequisites
-1. **Flutter SDK**: Ensure Flutter is installed. [Install Flutter Guide](https://docs.flutter.dev/get-started/install).
-2. **Node.js & Firebase CLI**: Required to configure hosting and deploy functions. [Install Node.js](https://nodejs.org/).
+To connect the application to your own production Firebase project, follow these steps:
+
+### 1. Create a Firebase Project
+1. Open the [Firebase Console](https://console.firebase.google.com/).
+2. Click **Add Project** and name it `CampusConnect`.
+3. Enable **Google Analytics** (recommended).
+
+### 2. Enable Authentication & Google Sign-In
+1. Navigate to **Build > Authentication > Sign-in method**.
+2. Click **Add new provider** and select **Google**.
+3. Enable the provider, select your project support email, and click **Save**.
+4. Under **Web SDK configuration**, copy the **Web client ID** and **Web client secret** (you will need these for Google OAuth client settings).
+
+### 3. Configure Google OAuth Consent Screen
+1. Go to the [Google Cloud Console Credentials Page](https://console.cloud.google.com/apis/credentials).
+2. Select your Firebase project.
+3. Click on the **OAuth consent screen** tab.
+4. Set the **User Type** to **External** (or Internal if restricted to your university domain).
+5. Add scopes: `.../auth/userinfo.email` and `.../auth/userinfo.profile`.
+6. Add your domain (`github.io`, `firebaseapp.com`) to the **Authorized domains** list.
+
+---
+
+## 📱 Platform Configuration Setup
+
+### Android Setup
+1. Generate your debug/release SHA-1 fingerprint:
    ```bash
-   npm install -g firebase-tools
+   # Windows PowerShell
+   keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore -storepass android -keypass android
+   ```
+2. Copy the **SHA-1** fingerprint.
+3. In the Firebase Console, go to **Project settings > General**.
+4. Under **Your apps**, select your Android app and paste the SHA-1 fingerprint into **SHA certificate fingerprints**.
+5. Download the `google-services.json` and place it under `android/app/google-services.json`.
+
+### iOS Setup
+1. In the Firebase Console, select your iOS app under **Project settings > General**.
+2. Add your **App Store ID** and **Team ID**.
+3. Download the `GoogleService-Info.plist` and place it in the root of your Xcode project runner.
+4. Open `ios/Runner/Info.plist` and add the `CFBundleURLTypes` section containing your **REVERSED_CLIENT_ID** (retrieved from `GoogleService-Info.plist`):
+   ```xml
+   <key>CFBundleURLTypes</key>
+   <array>
+       <dict>
+           <key>CFBundleTypeRole</key>
+           <string>Editor</string>
+           <key>CFBundleURLSchemes</key>
+           <array>
+               <string>com.googleusercontent.apps.YOUR_REVERSED_CLIENT_ID</string>
+           </array>
+       </dict>
+   </array>
+   ```
+
+### Web Setup
+1. For Flutter Web Google Sign-In, ensure the client ID is registered in `web/index.html` inside a meta tag:
+   ```html
+   <meta name="google-signin-client_id" content="558848717390-lg0at8k6bfpt09tpjb08kh3et94m4o9e.apps.googleusercontent.com">
    ```
 
 ---
 
-## Installation & Setup
+## ⚡ Deployment & Security Rules
 
-1. **Clone the Repository**:
-   ```bash
-   git clone <YOUR_GITHUB_REPOSITORY_URL>
-   cd "Campus Connect"
-   ```
+### Firestore Security Rules (`firestore.rules`)
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() { return request.auth != null; }
+    function isOwner(userId) { return isAuthenticated() && request.auth.uid == userId; }
 
-2. **Initialize dependencies**:
-   ```bash
-   flutter pub get
-   ```
-
-3. **Configure Firebase**:
-   - Log in to your Firebase account using the CLI:
-     ```bash
-     firebase login
-     ```
-   - Initialize the project workspace:
-     ```bash
-     firebase init
-     ```
-     *Select Firestore, Hosting, and Storage options and link it to your Firebase Console project.*
-
-4. **Initialize Flutter Fire Configurations**:
-   - Install the FlutterFire CLI globally:
-     ```bash
-     dart pub global activate flutterfire_cli
-     ```
-   - Run configure tool to bind Android, iOS, and Web build platforms:
-     ```bash
-     flutterfire configure
-     ```
-
----
-
-## Run and Test locally
-
-- **Web Browser**:
-  ```bash
-  flutter run -d chrome
-  ```
-- **Mobile Emulator / Device**:
-  ```bash
-  flutter run
-  ```
-
----
-
-## Deployment to Firebase Hosting
-
-Compile and deploy your web build instantly:
-```bash
-# Build the production bundle for web
-flutter build web --release
-
-# Deploy to Firebase hosting URL
-firebase deploy --only hosting
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+    match /items/{itemId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.sellerUid == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.sellerUid == request.auth.uid;
+    }
+    match /chats/{chatId} {
+      allow read, write: if isAuthenticated() && (request.auth.uid in resource.data.participants);
+    }
+  }
+}
 ```
-Once deployed, the app will be accessible at:
-👉 `https://campusconnect.web.app` or `https://campusconnect.firebaseapp.com`
 
----
+### Storage Security Rules (`storage.rules`)
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuthenticated() { return request.auth != null; }
+    function isOwner(userId) { return isAuthenticated() && request.auth.uid == userId; }
 
-## GitHub Release Instructions
-
-Run the following commands to initialize and release to your GitHub repository:
-```bash
-git init
-git add .
-git commit -m "Initial CampusConnect Release"
-git branch -M main
-git remote add origin <YOUR_GITHUB_REPOSITORY_URL>
-git push -u origin main
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) && request.resource.size < 5 * 1024 * 1024;
+    }
+    match /items/{itemId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.resource.size < 10 * 1024 * 1024;
+    }
+  }
+}
 ```
 
----
-
-## License
-Distributed under the MIT License. See [LICENSE](file:///c:/Users/Admin/OneDrive/Desktop/Campus%20Connect/LICENSE) for more information.
+### Build & Run Commands
+- **Install packages**: `flutter pub get`
+- **Run Android/iOS/Web**: `flutter run`
+- **Deploy to Firebase Hosting**:
+  ```bash
+  flutter build web --release
+  firebase deploy --only hosting
+  ```

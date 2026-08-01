@@ -23,7 +23,7 @@ class _AddListingViewState extends ConsumerState<AddListingView> {
   bool _negotiable = false;
   String _selectedCondition = 'Gently Used';
   String _selectedCategory = 'Books';
-  File? _imageFile;
+  final List<File> _imageFiles = [];
 
   final List<String> _categories = [
     'Books', 'Electronics', 'Cycles', 'Calculators', 'Furniture', 
@@ -42,16 +42,108 @@ class _AddListingViewState extends ConsumerState<AddListingView> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _showImagePickerOptions() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  'Add Photo',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('Take Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.close_rounded, color: Colors.red),
+                title: const Text('Cancel', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    if (_imageFiles.length >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You can upload up to 5 images only.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 70, // Basic compression
+      source: source,
+      imageQuality: 80,
     );
 
     if (pickedFile != null) {
+      final File file = File(pickedFile.path);
+      final int sizeInBytes = await file.length();
+      final double sizeInMb = sizeInBytes / (1024 * 1024);
+      
+      // Check file size (max 10MB)
+      if (sizeInMb > 10.0) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image size exceeds the 10 MB limit.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
+      // Check extensions (JPG, JPEG, PNG, WebP)
+      final ext = pickedFile.name.split('.').last.toLowerCase();
+      const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+      if (!validExtensions.contains(ext)) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Only JPG, JPEG, PNG, and WebP are allowed.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _imageFiles.add(file);
       });
     }
   }
@@ -60,10 +152,10 @@ class _AddListingViewState extends ConsumerState<AddListingView> {
     final user = ref.read(authProvider).userModel;
     if (user == null) return;
 
-    if (_imageFile == null) {
+    if (_imageFiles.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select or upload a product photo.'),
+          content: Text('Please select or upload at least one product photo.'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -82,7 +174,7 @@ class _AddListingViewState extends ConsumerState<AddListingView> {
             category: _selectedCategory,
             college: user.college,
             description: _descController.text.trim(),
-            imageFile: _imageFile!,
+            imageFiles: _imageFiles,
             sellerName: user.name,
             sellerInitials: user.initials,
           );
@@ -121,10 +213,12 @@ class _AddListingViewState extends ConsumerState<AddListingView> {
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
         elevation: 0.5,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.colorScheme.onBackground),
-          onPressed: () => context.pop(),
-        ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.colorScheme.onBackground),
+                onPressed: () => context.pop(),
+              )
+            : null,
         title: Text(
           'Sell an Item',
           style: TextStyle(fontWeight: FontWeight.extrabold, color: theme.colorScheme.onBackground),
@@ -132,69 +226,146 @@ class _AddListingViewState extends ConsumerState<AddListingView> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 120),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Photo Upload Widget
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: theme.colorScheme.onBackground.withOpacity(0.08),
-                      style: BorderStyle.solid,
-                    ),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 10, offset: const Offset(0, 4)),
-                    ],
-                  ),
-                  child: _imageFile != null
-                      ? Stack(
+              if (_imageFiles.isNotEmpty)
+                SizedBox(
+                  height: 120,
+                  child: ReorderableListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _imageFiles.length + (_imageFiles.length < 5 ? 1 : 0),
+                    onReorder: (oldIndex, newIndex) {
+                      if (oldIndex >= _imageFiles.length || newIndex > _imageFiles.length) {
+                        return;
+                      }
+                      setState(() {
+                        if (oldIndex < newIndex) {
+                          newIndex -= 1;
+                        }
+                        final File item = _imageFiles.removeAt(oldIndex);
+                        _imageFiles.insert(newIndex, item);
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      if (index == _imageFiles.length) {
+                        return GestureDetector(
+                          key: const ValueKey('add_more_btn'),
+                          onTap: _showImagePickerOptions,
+                          child: Container(
+                            width: 100,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: theme.colorScheme.onBackground.withOpacity(0.08),
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_a_photo_outlined, size: 28, color: theme.colorScheme.primary),
+                                const SizedBox(height: 8),
+                                const Text('Add More', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      final file = _imageFiles[index];
+                      return Container(
+                        key: ValueKey(file.path),
+                        width: 100,
+                        margin: const EdgeInsets.only(right: 12),
+                        child: Stack(
                           fit: StackFit.expand,
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(16),
                               child: kIsWeb 
-                                ? Image.network(_imageFile!.path, fit: BoxFit.cover)
-                                : Image.file(_imageFile!, fit: BoxFit.cover),
+                                  ? Image.network(file.path, fit: BoxFit.cover)
+                                  : Image.file(file, fit: BoxFit.cover),
                             ),
                             Positioned(
-                              top: 12,
-                              right: 12,
-                              child: CircleAvatar(
-                                backgroundColor: Colors.black.withOpacity(0.5),
-                                child: IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.white, size: 18),
-                                  onPressed: _pickImage,
+                              top: 4,
+                              right: 4,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _imageFiles.removeAt(index);
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.close_rounded, size: 14, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 4,
+                              left: 4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  index == 0 ? 'Cover' : '${index + 1}',
+                                  style: const TextStyle(fontSize: 8, color: Colors.white, fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ),
                           ],
-                        )
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_photo_alternate_outlined, size: 48, color: theme.colorScheme.primary),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Upload Product Photo',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'PNG, JPG up to 10MB',
-                              style: TextStyle(fontSize: 11, color: theme.colorScheme.onBackground.withOpacity(0.4)),
-                            ),
-                          ],
                         ),
+                      );
+                    },
+                  ),
+                )
+              else
+                GestureDetector(
+                  onTap: _showImagePickerOptions,
+                  child: Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: theme.colorScheme.onBackground.withOpacity(0.08),
+                        style: BorderStyle.solid,
+                      ),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 10, offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add_photo_alternate_outlined, size: 48, color: theme.colorScheme.primary),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Upload Product Photos',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'PNG, JPG, JPEG, WebP up to 10MB (Max 5)',
+                          style: TextStyle(fontSize: 11, color: theme.colorScheme.onBackground.withOpacity(0.4)),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
               const SizedBox(height: 24),
 
               // Title Field
@@ -309,6 +480,26 @@ class _AddListingViewState extends ConsumerState<AddListingView> {
               const SizedBox(height: 32),
 
               // Publish Button
+              if (productState.isLoading) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: productState.uploadProgress,
+                    backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                    minHeight: 8,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: Text(
+                    'Uploading images: ${(productState.uploadProgress * 100).toInt()}%',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+
               ElevatedButton(
                 onPressed: productState.isLoading ? null : _publishListing,
                 style: ElevatedButton.styleFrom(
@@ -319,13 +510,9 @@ class _AddListingViewState extends ConsumerState<AddListingView> {
                   elevation: 0,
                 ),
                 child: productState.isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
+                    ? const Text(
+                        'Uploading & Publishing...',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       )
                     : const Text(
                         'Publish Listing',

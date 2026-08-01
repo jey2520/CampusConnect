@@ -33,6 +33,9 @@ class UserModel {
     this.status = 'Active',
   });
 
+  String get name => fullName;
+  String get phone => phoneNumber;
+
   String get initials {
     if (fullName.isEmpty) return 'CC';
     final parts = fullName.trim().split(RegExp(r'\s+'));
