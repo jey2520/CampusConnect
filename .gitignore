@@ -1,0 +1,54 @@
+# Flutter/Dart build and local cache files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Firebase configuration caches
+.firebase/
+firestore.indexes.json.log
+storage.rules.log
+firestore.rules.log
+
+# Android-specific build and IDE outputs
+.gradle/
+local.properties
+gen/
+*.apk
+*.ap_
+*.dex
+*.class
+bin/
+obj/
+
+# iOS-specific build and IDE outputs
+*.mode1v3
+*.mode2v3
+*.storyboardc
+*.xccheckout
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+Pods/
+Podfile.lock
+
+# Web specific build and local artifacts
+node_modules/
+.web/
+
+# IDE specific settings
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+Thumbs.db

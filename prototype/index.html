@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusConnect - Premium Marketplace UI/UX Showcase</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="A premium, modern, clean, and minimalist mobile UI/UX showcase for CampusConnect, a college student marketplace. Built with Apple-level design elegance.">
+  <meta name="keywords" content="UI/UX, CampusConnect, Mobile Design, Case Study, Dribbble, Behance, Student Marketplace">
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="showcase-light">
+
+  <!-- Global Showcase Header / Top Bar -->
+  <header class="showcase-header">
+    <div class="header-logo">
+      <span class="material-icons-round logo-icon">school</span>
+      <div class="logo-text">
+        <span class="brand-name">CampusConnect</span>
+        <span class="brand-badge">PROTOTYPE V1.0</span>
+      </div>
+    </div>
+    <div class="header-controls">
+      <div class="theme-toggle-wrapper">
+        <button id="btn-theme-light" class="theme-btn active" title="Light Theme">
+          <span class="material-icons-round">light_mode</span>
+        </button>
+        <button id="btn-theme-dark" class="theme-btn" title="Dark Theme">
+          <span class="material-icons-round">dark_mode</span>
+        </button>
+      </div>
+      <div class="view-selector">
+        <button id="tab-interactive" class="view-tab-btn active">Interactive Demo</button>
+        <button id="tab-grid" class="view-tab-btn">All 14 Screens</button>
+        <button id="tab-design-system" class="view-tab-btn">Design System</button>
+      </div>
+      <button id="btn-launch-app" class="btn-primary-action">Test App Mode</button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="showcase-hero">
+    <div class="hero-content">
+      <div class="hero-tag">Venture-Backed Startup Concept</div>
+      <h1 class="hero-title">Buy. Sell. Connect.</h1>
+      <p class="hero-subtitle">
+        An Apple-level premium UI/UX mixed with Google's Material 3 design system, specifically crafted for the modern college student marketplace. Clean, fast, and intuitive.
+      </p>
+      <div class="hero-metrics">
+        <div class="metric-item">
+          <span class="metric-val">14</span>
+          <span class="metric-label">High-Fi Screens</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-val">8px</span>
+          <span class="metric-label">Grid Spacing</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-val">Dual</span>
+          <span class="metric-label">Light & Dark Modes</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="floating-cards">
+        <div class="f-card f-card-1">
+          <div class="f-card-header">
+            <span class="material-icons-round text-success">verified_user</span>
+            <span class="f-card-time">Just Now</span>
+          </div>
+          <div class="f-card-body">Verified Student listed Macbook Pro 16"</div>
+        </div>
+        <div class="f-card f-card-2">
+          <div class="f-card-header">
+            <span class="f-card-tag">TRENDING</span>
+            <span class="f-card-price">₹800</span>
+          </div>
+          <div class="f-card-body">Calculators & Textbooks</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Presentation Section -->
+  <main id="interactive-section" class="showcase-main">
+
+    <!-- Tab 1: Interactive Device View -->
+    <div id="view-content-interactive" class="view-content active">
+      <div class="interactive-layout">
+        <!-- Interactive Controls (Left Sidebar) -->
+        <div class="interactive-sidebar">
+          <h3>Interactive Navigator</h3>
+          <p class="sidebar-help">Click any screen to load it directly in the mockup, or navigate using the phone buttons.</p>
+          
+          <div class="screen-links-group">
+            <div class="group-title">Authentication</div>
+            <button class="nav-screen-link active" data-screen="splash">
+              <span class="screen-num">01</span> Splash Screen
+            </button>
+            <button class="nav-screen-link" data-screen="login">
+              <span class="screen-num">02</span> Login Screen
+            </button>
+            <button class="nav-screen-link" data-screen="register">
+              <span class="screen-num">03</span> Register Screen
+            </button>
+            
+            <div class="group-title">Core Marketplace</div>
+            <button class="nav-screen-link" data-screen="home">
+              <span class="screen-num">04</span> Home Dashboard
+            </button>
+            <button class="nav-screen-link" data-screen="categories">
+              <span class="screen-num">05</span> Categories Grid
+            </button>
+            <button class="nav-screen-link" data-screen="search-filter">
+              <span class="screen-num">06</span> Search & Filter
+            </button>
+            <button class="nav-screen-link" data-screen="product-details">
+              <span class="screen-num">07</span> Product Details
+            </button>
+            <button class="nav-screen-link" data-screen="add-listing">
+              <span class="screen-num">08</span> Add New Listing
+            </button>
+            
+            <div class="group-title">Communications & Account</div>
+            <button class="nav-screen-link" data-screen="chats">
+              <span class="screen-num">09</span> Chat Inbox
+            </button>
+            <button class="nav-screen-link" data-screen="chat-screen">
+              <span class="screen-num">10</span> Active Conversation
+            </button>
+            <button class="nav-screen-link" data-screen="my-listings">
+              <span class="screen-num">11</span> My Listings Manager
+            </button>
+            <button class="nav-screen-link" data-screen="profile">
+              <span class="screen-num">12</span> User Profile
+            </button>
+            
+            <div class="group-title">Order Lifecycle</div>
+            <button class="nav-screen-link" data-screen="checkout">
+              <span class="screen-num">13</span> Secure Checkout
+            </button>
+            <button class="nav-screen-link" data-screen="tracking">
+              <span class="screen-num">14</span> Order Tracking
+            </button>
+          </div>
+
+          <div class="interactive-status">
+            <div class="status-title">Mockup Controls</div>
+            <div class="status-row">
+              <span>Sync Phone Theme:</span>
+              <label class="switch">
+                <input type="checkbox" id="sync-phone-theme" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <button id="btn-trigger-success" class="btn-secondary-action">Trigger Success Dialog</button>
+            <button id="btn-trigger-error" class="btn-secondary-action">Trigger Error Dialog</button>
+            <button id="btn-trigger-loading" class="btn-secondary-action">Toggle Skeleton State</button>
+          </div>
+        </div>
+
+        <!-- Phone Mockup Container (Center) -->
+        <div class="phone-mockup-wrapper">
+          <div class="phone-case shadow-premium" id="phone-case-element">
+            <!-- Physical Device Features -->
+            <div class="phone-speaker"></div>
+            <div class="phone-camera"></div>
+            
+            <!-- Phone Screen Screen Wrapper -->
+            <div class="phone-screen" id="phone-screen-root">
+              
+              <!-- Phone Status Bar -->
+              <div class="phone-status-bar">
+                <span class="status-time" id="phone-clock">09:41</span>
+                <div class="status-icons">
+                  <span class="material-icons-round icon-small">signal_cellular_alt</span>
+                  <span class="material-icons-round icon-small">wifi</span>
+                  <span class="material-icons-round icon-small">battery_full</span>
+                </div>
+              </div>
+
+              <!-- Phone Screens Container (JS swaps active child screen) -->
+              <div class="phone-screens-viewport" id="viewport">
+
+                <!-- 1. Splash Screen -->
+                <div class="screen-container active" id="scr-splash">
+                  <div class="splash-bg">
+                    <div class="splash-logo-container">
+                      <div class="splash-cap-wrapper">
+                        <span class="material-icons-round splash-cap-icon">school</span>
+                      </div>
+                      <h1 class="splash-logo-text">CampusConnect</h1>
+                      <p class="splash-tagline">Buy. Sell. Connect.</p>
+                    </div>
+                    <div class="splash-actions">
+                      <button class="btn-app-primary ripple" onclick="navigateTo('login')">Get Started</button>
+                      <button class="btn-app-text" onclick="navigateTo('login')">Login</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Login Screen -->
+                <div class="screen-container" id="scr-login">
+                  <div class="screen-content scrollable">
+                    <div class="screen-header-back">
+                      <button class="btn-back" onclick="navigateBack()"><span class="material-icons-round">arrow_back_ios</span></button>
+                    </div>
+                    <div class="auth-illustration-box">
+                      <span class="material-icons-round illustration-icon">devices</span>
+                      <!-- Custom CSS Illustration will render -->
+                    </div>
+                    <div class="auth-title-section">
+                      <h2 id="auth-main-title">CampusConnect</h2>
+                      <p id="auth-sub-title">Enter your mobile number to sign in or register</p>
+                    </div>
+                    <div class="auth-form">
+                      <!-- Step 1: Mobile Input -->
+                      <div id="auth-step-mobile">
+                        <div class="form-group">
+                          <label>Mobile Number</label>
+                          <div class="input-wrapper">
+                            <span class="material-icons-round input-icon">phone</span>
+                            <input type="tel" id="login-phone-input" placeholder="Enter 10-digit number">
+                          </div>
+                        </div>
+                        <button class="btn-app-primary ripple" onclick="sendMobileOtp()" style="margin-top: 16px;">Send OTP</button>
+                        
+                        <div class="auth-divider">
+                          <span>or continue with</span>
+                        </div>
+                        
+                        <!-- Official Google Sign-In SDK Integration -->
+                        <div id="g_id_onload"
+                             data-client_id="859134789502-jka78f23jfb.apps.googleusercontent.com"
+                             data-context="signin"
+                             data-ux_mode="popup"
+                             data-callback="handleGoogleCredentialResponse"
+                             data-auto_prompt="false"
+                             style="margin: 12px auto 0 auto; display: block; width: 100%;">
+                        </div>
+                        <div class="g_id_signin"
+                             data-type="standard"
+                             data-shape="pill"
+                             data-theme="outline"
+                             data-text="signin_with"
+                             data-size="large"
+                             data-logo_alignment="left"
+                             style="display: flex; justify-content: center; width: 100%; margin-top: 10px;">
+                        </div>
+                      </div>
+
+                      <!-- Step 2: OTP Input -->
+                      <div id="auth-step-otp" style="display:none;">
+                        <div class="form-group">
+                          <label>Enter 6-Digit OTP</label>
+                          <div class="input-wrapper">
+                            <span class="material-icons-round input-icon">lock</span>
+                            <input type="number" id="login-otp-input" placeholder="e.g. 123456">
+                          </div>
+                        </div>
+                        <button class="btn-app-primary ripple" onclick="verifyMobileOtp()" style="margin-top: 16px;">Verify OTP</button>
+                        <button class="btn-app-secondary ripple" onclick="resetAuthStep()" style="margin-top: 8px; width: 100%;">Back</button>
+                      </div>
+
+                      <!-- Step 3: Profile Onboarding -->
+                      <div id="auth-step-onboarding" style="display:none; text-align: left;">
+                        <div class="form-group">
+                          <label>Full Name</label>
+                          <div class="input-wrapper">
+                            <span class="material-icons-round input-icon">person</span>
+                            <input type="text" id="onboard-name-input" placeholder="Your Full Name">
+                          </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 12px;">
+                          <label>College/University</label>
+                          <div class="input-wrapper">
+                            <span class="material-icons-round input-icon">school</span>
+                            <select id="onboard-college-input" style="width:100%; border:none; outline:none; background:transparent; font-size:13px; color:var(--text-main);">
+                              <option value="SRM University">SRM University</option>
+                              <option value="VIT University">VIT University</option>
+                              <option value="IIT Madras">IIT Madras</option>
+                              <option value="Anna University">Anna University</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 12px;">
+                          <label>Department</label>
+                          <div class="input-wrapper">
+                            <span class="material-icons-round input-icon">book</span>
+                            <input type="text" id="onboard-dept-input" placeholder="e.g. CSE">
+                          </div>
+                        </div>
+                        <button class="btn-app-primary ripple" onclick="completeOnboarding()" style="margin-top: 20px;">Complete Profile</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Register Screen -->
+                <div class="screen-container" id="scr-register">
+                  <div class="screen-content scrollable">
+                    <div class="screen-header-back">
+                      <button class="btn-back" onclick="navigateBack()"><span class="material-icons-round">arrow_back_ios</span></button>
+                    </div>
+                    <div class="auth-illustration-box mini">
+                      <span class="material-icons-round illustration-icon">school</span>
+                    </div>
+                    <div class="auth-title-section">
+                      <h2>Join CampusConnect</h2>
+                      <p>Trade with students directly and securely</p>
+                    </div>
+                    <div class="auth-form">
+                      <div class="form-group">
+                        <label>Full Name</label>
+                        <div class="input-wrapper">
+                          <span class="material-icons-round input-icon">person_outline</span>
+                          <input type="text" placeholder="Alex Rivera" id="reg-name">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label>Email Address</label>
+                        <div class="input-wrapper">
+                          <span class="material-icons-round input-icon">mail_outline</span>
+                          <input type="email" placeholder="yourname@university.edu" id="reg-email">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label>Phone Number</label>
+                        <div class="input-wrapper">
+                          <span class="material-icons-round input-icon">phone</span>
+                          <input type="tel" placeholder="+1 (555) 019-2834" id="reg-phone">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label>College/University</label>
+                        <div class="input-wrapper">
+                          <span class="material-icons-round input-icon">account_balance</span>
+                          <input type="text" placeholder="Stanford University" id="reg-college">
+                        </div>
+                      </div>
+                      <div class="form-row-2">
+                        <div class="form-group">
+                          <label>Department</label>
+                          <div class="input-wrapper">
+                            <input type="text" placeholder="CS" id="reg-dept">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label>Year</label>
+                          <div class="input-wrapper">
+                            <input type="text" placeholder="Junior" id="reg-year">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                          <span class="material-icons-round input-icon">lock_outline</span>
+                          <input type="password" placeholder="Min. 8 characters" id="reg-password">
+                        </div>
+                      </div>
+                      <button class="btn-app-primary ripple" onclick="registerUser()">Sign Up</button>
+                      <div class="auth-footer">
+                        <span>Already have an account? </span>
+                        <a href="#" class="app-link" onclick="navigateTo('login')">Login</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 4. Home Screen -->
+                <div class="screen-container" id="scr-home">
+                  <div class="screen-content scrollable padding-bottom-nav">
+                    <!-- Home Top Bar -->
+                    <div class="home-top-bar">
+                      <div class="home-search-wrapper" onclick="navigateTo('search-filter')">
+                        <span class="material-icons-round search-icon">search</span>
+                        <span class="search-placeholder-text">Search campus listings...</span>
+                      </div>
+                      <button class="icon-btn-badge" onclick="showNotification('No new notifications')">
+                        <span class="material-icons-round">notifications</span>
+                        <span class="badge-dot"></span>
+                      </button>
+                    </div>
+
+                    <!-- Promotional Banner -->
+                    <div class="promo-banner">
+                      <div class="promo-content">
+                        <h3>Buy & Sell Used Items</h3>
+                        <p>Direct campus trading with verified classmates.</p>
+                      </div>
+                      <div class="promo-badge">Secure</div>
+                    </div>
+
+                    <!-- Horizontal Categories Header -->
+                    <div class="section-header">
+                      <h4>Categories</h4>
+                      <a href="#" class="see-all" onclick="navigateTo('categories')">See All</a>
+                    </div>
+                    
+                    <!-- Horizontal Categories Scroll -->
+                    <div class="horizontal-scroll categories-scroll">
+                      <!-- Rendered dynamically by JS -->
+                    </div>
+
+                    <!-- Filter Chips (Condition, Quick Filters) -->
+                    <div class="horizontal-scroll quick-chips">
+                      <span class="quick-chip active">All Items</span>
+                      <span class="quick-chip" onclick="applyQuickFilter('Electronics')">Electronics</span>
+                      <span class="quick-chip" onclick="applyQuickFilter('Books')">Books</span>
+                      <span class="quick-chip" onclick="applyQuickFilter('Furniture')">Furniture</span>
+                    </div>
+
+                    <!-- Featured Listings Section -->
+                    <div class="section-header">
+                      <h4>Featured Listings</h4>
+                      <span class="badge-pill">Verifed Only</span>
+                    </div>
+                    <div class="listings-grid" id="featured-listings-container">
+                      <!-- Rendered dynamically by JS -->
+                    </div>
+
+                    <!-- Recently Added Section -->
+                    <div class="section-header margin-top">
+                      <h4>Recently Added</h4>
+                    </div>
+                    <div class="listings-grid" id="recent-listings-container">
+                      <!-- Rendered dynamically by JS -->
+                    </div>
+
+                    <!-- Trending Products -->
+                    <div class="section-header margin-top">
+                      <h4>Trending Products</h4>
+                    </div>
+                    <div class="horizontal-scroll trending-scroll" id="trending-listings-container">
+                      <!-- Rendered dynamically by JS -->
+                    </div>
+                  </div>
+                  <!-- Bottom Navigation is rendered on top inside viewport -->
+                </div>
+
+                <!-- 5. Categories Screen -->
+                <div class="screen-container" id="scr-categories">
+                  <div class="screen-content scrollable padding-bottom-nav">
+                    <div class="screen-header">
+                      <button class="btn-back" onclick="navigateBack()"><span class="material-icons-round">arrow_back_ios</span></button>
+                      <h3>Categories</h3>
+                      <div style="width:24px"></div>
+                    </div>
+                    
+                    <div class="categories-grid-wrapper">
+                      <!-- Category Cards with colorful custom gradients -->
+                      <div class="category-card g-1" onclick="selectCategory('Books')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">menu_book</span></div>
+                        <span>Books</span>
+                      </div>
+                      <div class="category-card g-2" onclick="selectCategory('Electronics')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">laptop_mac</span></div>
+                        <span>Electronics</span>
+                      </div>
+                      <div class="category-card g-3" onclick="selectCategory('Cycles')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">directions_bike</span></div>
+                        <span>Cycles</span>
+                      </div>
+                      <div class="category-card g-4" onclick="selectCategory('Calculators')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">calculate</span></div>
+                        <span>Calculators</span>
+                      </div>
+                      <div class="category-card g-5" onclick="selectCategory('Furniture')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">chair</span></div>
+                        <span>Furniture</span>
+                      </div>
+                      <div class="category-card g-6" onclick="selectCategory('Lab Equipment')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">science</span></div>
+                        <span>Lab Equip</span>
+                      </div>
+                      <div class="category-card g-7" onclick="selectCategory('Sports')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">sports_basketball</span></div>
+                        <span>Sports</span>
+                      </div>
+                      <div class="category-card g-8" onclick="selectCategory('Fashion')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">checkroom</span></div>
+                        <span>Fashion</span>
+                      </div>
+                      <div class="category-card g-9" onclick="selectCategory('Accessories')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">watch</span></div>
+                        <span>Accessories</span>
+                      </div>
+                      <div class="category-card g-10" onclick="selectCategory('Hostel')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">bed</span></div>
+                        <span>Hostel</span>
+                      </div>
+                      <div class="category-card g-11" onclick="selectCategory('Miscellaneous')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">more_horiz</span></div>
+                        <span>Misc</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 6. Search & Filter Screen -->
+                <div class="screen-container" id="scr-search-filter">
+                  <div class="screen-content scrollable">
+                    <div class="search-top-bar">
+                      <button class="btn-back-raw" onclick="navigateBack()">
+                        <span class="material-icons-round">arrow_back</span>
+                      </button>
+                      <div class="search-input-field">
+                        <span class="material-icons-round search-field-icon">search</span>
+                        <input type="text" placeholder="Search textbooks, electronics..." id="main-search-input" oninput="runSearch()">
+                      </div>
+                    </div>
+
+                    <div class="filter-body">
+                      <div class="filter-section">
+                        <h5>Categories</h5>
+                        <div class="chip-group" id="filter-category-chips">
+                          <!-- Chips toggled dynamically -->
+                          <span class="filter-chip active" onclick="toggleFilterChip(this, 'all')">All</span>
+                          <span class="filter-chip" onclick="toggleFilterChip(this, 'Books')">Books</span>
+                          <span class="filter-chip" onclick="toggleFilterChip(this, 'Electronics')">Electronics</span>
+                          <span class="filter-chip" onclick="toggleFilterChip(this, 'Calculators')">Calculators</span>
+                          <span class="filter-chip" onclick="toggleFilterChip(this, 'Furniture')">Furniture</span>
+                        </div>
+                      </div>
+
+                      <div class="filter-section">
+                        <h5>Price Range</h5>
+                        <div class="price-slider-container">
+                          <div class="price-slider-values">
+                            <span>₹0</span>
+                            <span id="slider-max-display">₹50000</span>
+                          </div>
+                          <input type="range" class="custom-range" id="filter-price-range" min="0" max="100000" value="50000" oninput="updatePriceSlider(this.value)">
+                        </div>
+                      </div>
+
+                      <div class="filter-section">
+                        <h5>Condition</h5>
+                        <div class="chip-group" id="filter-condition-chips">
+                          <span class="filter-chip active" onclick="toggleFilterChip(this, 'any')">Any</span>
+                          <span class="filter-chip" onclick="toggleFilterChip(this, 'Brand New')">Brand New</span>
+                          <span class="filter-chip" onclick="toggleFilterChip(this, 'Like New')">Like New</span>
+                          <span class="filter-chip" onclick="toggleFilterChip(this, 'Gently Used')">Gently Used</span>
+                        </div>
+                      </div>
+
+                      <div class="filter-section">
+                        <h5>College / Location</h5>
+                        <div class="input-wrapper">
+                          <span class="material-icons-round input-icon">location_on</span>
+                          <input type="text" placeholder="Enter College Name" id="filter-college" value="Stanford University">
+                        </div>
+                      </div>
+
+                      <div class="filter-section">
+                        <h5>Sort By</h5>
+                        <div class="chip-group" id="filter-sort-chips">
+                          <span class="filter-chip active" onclick="toggleFilterChip(this, 'newest')">Newest</span>
+                          <span class="filter-chip" onclick="toggleFilterChip(this, 'oldest')">Oldest</span>
+                        </div>
+                      </div>
+
+                      <div class="filter-actions">
+                        <button class="btn-app-text-danger" onclick="resetFilters()">Reset</button>
+                        <button class="btn-app-primary flex-grow" onclick="applyFilters()">Apply Filter</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 7. Product Details Screen -->
+                <div class="screen-container" id="scr-product-details">
+                  <div class="screen-content scrollable padding-bottom-nav">
+                    <!-- Carousel Area -->
+                    <div class="carousel-container">
+                      <img id="detail-image" src="" alt="Product Image">
+                      <div class="carousel-nav-overlay">
+                        <button class="btn-circular" onclick="navigateBack()">
+                          <span class="material-icons-round">arrow_back</span>
+                        </button>
+                        <div class="right-buttons">
+                          <button class="btn-circular" onclick="toggleDetailWishlist()" id="detail-wishlist-btn">
+                            <span class="material-icons-round">favorite_border</span>
+                          </button>
+                          <button class="btn-circular" onclick="showNotification('Share link copied to clipboard')">
+                            <span class="material-icons-round">share</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="carousel-indicators">
+                        <span class="dot active"></span>
+                        <span class="dot"></span>
+                      </div>
+                    </div>
+
+                    <!-- Product Specs -->
+                    <div class="product-details-body">
+                      <div class="badge-row">
+                        <span class="badge-pill bg-success-light" id="detail-negotiable">Negotiable</span>
+                        <span class="badge-pill bg-primary-light" id="detail-condition">Like New</span>
+                      </div>
+
+                      <h2 id="detail-title" class="product-title-text">Product Title</h2>
+                      <h1 id="detail-price" class="product-price-text">$0.00</h1>
+
+                      <p id="detail-desc" class="product-description-text">Description goes here...</p>
+
+                      <hr class="divider">
+
+                      <!-- Seller Card -->
+                      <div class="seller-card">
+                        <div class="seller-avatar" id="detail-seller-avatar">AR</div>
+                        <div class="seller-info">
+                          <div class="seller-name-row">
+                            <h4 id="detail-seller-name">Alex Rivera</h4>
+                            <span class="verified-badge-inline" title="Verified Student">
+                              <span class="material-icons-round icon-xs">verified</span>
+                              Verified Student
+                            </span>
+                          </div>
+                          <p id="detail-seller-college">Stanford University</p>
+                        </div>
+                        <button class="icon-btn-round" onclick="showNotification('Seller rated 4.9★')">
+                          <span class="material-icons-round text-success">star</span>
+                          <span class="rating-text">4.9</span>
+                        </button>
+                      </div>
+
+                      <!-- Bottom CTA Panel inside Details -->
+                      <div class="detail-cta-row">
+                        <button class="btn-app-secondary-flex ripple" onclick="startSellerChat()">
+                          <span class="material-icons-round">chat_bubble</span> Chat
+                        </button>
+                        <button class="btn-app-primary-flex ripple" onclick="openCheckout()" style="background:var(--accent); color:var(--text-main); font-weight:800; box-shadow: 0 4px 10px rgba(0, 212, 166, 0.15);">
+                          <span class="material-icons-round">shopping_bag</span> Buy Now
+                        </button>
+                      </div>
+
+                      <!-- Related Listings -->
+                      <div class="section-header margin-top">
+                        <h4>Related Listings</h4>
+                      </div>
+                      <div class="listings-grid" id="related-listings-container">
+                        <!-- Rendered by JS -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 8. Add Listing Screen -->
+                <div class="screen-container" id="scr-add-listing">
+                  <div class="screen-content scrollable padding-bottom-nav">
+                    <div class="screen-header">
+                      <button class="btn-back" onclick="navigateBack()"><span class="material-icons-round">arrow_back_ios</span></button>
+                      <h3>Add New Listing</h3>
+                      <div style="width:24px"></div>
+                    </div>
+
+                    <div class="add-form-container">
+                      <!-- Photo Upload Box -->
+                      <div class="upload-box" onclick="triggerRealPhotoUpload()">
+                        <span class="material-icons-round upload-icon">add_a_photo</span>
+                        <span>Upload Photos</span>
+                        <p>Take photo or upload from phone</p>
+                        <input type="file" id="product-photo-input" accept="image/*" style="display:none;" onchange="handleRealPhotoUpload(event)">
+                        <div id="upload-preview" class="upload-preview-container"></div>
+                      </div>
+
+                      <div class="form-group">
+                        <label>Listing Title</label>
+                        <div class="input-wrapper">
+                          <input type="text" placeholder="e.g. iPad Air 5th Gen (64GB)" id="add-title">
+                        </div>
+                      </div>
+
+                      <div class="form-row-2">
+                        <div class="form-group">
+                          <label>Category</label>
+                          <div class="input-wrapper">
+                            <select id="add-category">
+                              <option value="Electronics">Electronics</option>
+                              <option value="Books">Books</option>
+                              <option value="Calculators">Calculators</option>
+                              <option value="Lab Equipment">Lab Equipment</option>
+                              <option value="Furniture">Furniture</option>
+                              <option value="Cycles">Cycles</option>
+                              <option value="Fashion">Fashion</option>
+                              <option value="Sports">Sports</option>
+                              <option value="Accessories">Accessories</option>
+                              <option value="Hostel">Hostel</option>
+                              <option value="Miscellaneous">Miscellaneous</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label>Price (₹)</label>
+                          <div class="input-wrapper">
+                            <input type="number" placeholder="500" id="add-price">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="negotiable-checkbox-row">
+                        <label class="custom-checkbox-wrapper">
+                          <input type="checkbox" id="add-negotiable" checked>
+                          <span class="checkmark"></span>
+                          <span>Price is Negotiable</span>
+                        </label>
+                      </div>
+
+                      <div class="form-group">
+                        <label>Condition</label>
+                        <div class="input-wrapper">
+                          <select id="add-condition">
+                            <option value="Brand New">Brand New</option>
+                            <option value="Like New">Like New</option>
+                            <option value="Gently Used">Gently Used</option>
+                            <option value="Fair Condition">Fair Condition</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label>Description</label>
+                        <div class="input-wrapper">
+                          <textarea placeholder="Tell us more about the item (defect, usage time, college pickup guidelines)..." id="add-desc" rows="4"></textarea>
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label>Pickup College / Location</label>
+                        <div class="input-wrapper">
+                          <span class="material-icons-round input-icon">location_on</span>
+                          <input type="text" placeholder="Stanford University" id="add-college" value="Stanford University">
+                        </div>
+                      </div>
+
+                      <button class="btn-app-primary ripple" onclick="submitNewListing()">Submit Listing</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 9. Chats Screen (Inbox) -->
+                <div class="screen-container" id="scr-chats">
+                  <div class="screen-content scrollable padding-bottom-nav">
+                    <div class="chats-header">
+                      <h3>Messages</h3>
+                      <button class="icon-btn-round" onclick="showNotification('Starting new chat thread...')">
+                        <span class="material-icons-round">rate_review</span>
+                      </button>
+                    </div>
+                    
+                    <div class="chats-search-row">
+                      <div class="search-input-field">
+                        <span class="material-icons-round search-field-icon">search</span>
+                        <input type="text" placeholder="Search messages..." id="chat-search" oninput="runChatSearch()">
+                      </div>
+                    </div>
+
+                    <!-- Chats List -->
+                    <div class="chats-list-container" id="chats-list">
+                      <!-- Rendered Dynamically by JS -->
+                    </div>
+
+                    <!-- Floating Action Button for Chats -->
+                    <button class="fab-chat ripple" onclick="showNotification('Starting new chat thread...')">
+                      <span class="material-icons-round">chat</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 10. Chat Screen (Active Chat) -->
+                <div class="screen-container" id="scr-chat-screen">
+                  <div class="screen-content flex-column-layout">
+                    <!-- Active Chat Header -->
+                    <div class="chat-active-header">
+                      <button class="btn-back" onclick="navigateTo('chats')">
+                        <span class="material-icons-round">arrow_back</span>
+                      </button>
+                      <div class="chat-header-avatar" id="active-chat-avatar">EM</div>
+                      <div class="chat-header-info">
+                        <h4 id="active-chat-name">Emily Watson</h4>
+                        <span class="active-status-indicator">
+                          <span class="status-dot-green"></span> Online
+                        </span>
+                      </div>
+                      <button class="icon-btn-round" onclick="showNotification('Calling feature coming soon!')">
+                        <span class="material-icons-round text-primary">phone</span>
+                      </button>
+                    </div>
+
+                    <!-- Chat Bubbles Scroller -->
+                    <div class="chat-bubbles-scroller scrollable" id="chat-bubble-container">
+                      <!-- Bubbles rendered dynamically by JS -->
+                    </div>
+
+                    <!-- Typing Indicator -->
+                    <div class="typing-indicator-wrapper" id="typing-indicator" style="display: none;">
+                      <div class="typing-bubble">
+                        <span></span><span></span><span></span>
+                      </div>
+                    </div>
+
+                    <!-- Chat Input Panel -->
+                    <div class="chat-input-panel">
+                      <button class="icon-btn-round" onclick="showNotification('Camera features locked in prototype')">
+                        <span class="material-icons-round text-gray">photo_camera</span>
+                      </button>
+                      <button class="icon-btn-round" onclick="showNotification('Attachment features locked in prototype')">
+                        <span class="material-icons-round text-gray">attach_file</span>
+                      </button>
+                      <div class="chat-input-wrapper">
+                        <input type="text" placeholder="Type a message..." id="chat-message-input" onkeydown="handleChatInputKey(event)">
+                        <button class="icon-btn-round" onclick="showNotification('Voice note recording')">
+                          <span class="material-icons-round text-gray">sentiment_satisfied_alt</span>
+                        </button>
+                      </div>
+                      <button class="btn-send-message ripple" onclick="sendChatMessage()">
+                        <span class="material-icons-round">send</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 11. My Listings Screen -->
+                <div class="screen-container" id="scr-my-listings">
+                  <div class="screen-content scrollable padding-bottom-nav">
+                    <div class="screen-header">
+                      <button class="btn-back" onclick="navigateBack()"><span class="material-icons-round">arrow_back_ios</span></button>
+                      <h3>My Listings</h3>
+                      <button class="icon-btn-round" onclick="navigateTo('add-listing')">
+                        <span class="material-icons-round text-primary">add</span>
+                      </button>
+                    </div>
+
+                    <!-- Tabs: Active, Sold, Draft -->
+                    <div class="listings-tab-bar">
+                      <button class="listing-tab active" onclick="switchMyListingsTab(this, 'active')">Active</button>
+                      <button class="listing-tab" onclick="switchMyListingsTab(this, 'sold')">Sold</button>
+                      <button class="listing-tab" onclick="switchMyListingsTab(this, 'draft')">Draft</button>
+                    </div>
+
+                    <!-- My Listings Container -->
+                    <div class="my-listings-list-wrapper" id="my-listings-container">
+                      <!-- Rendered by JS -->
+                    </div>
+
+                    <!-- Floating Action Button for Add Listing -->
+                    <button class="fab-add ripple" onclick="navigateTo('add-listing')">
+                      <span class="material-icons-round">add</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 12. Profile Screen -->
+                <div class="screen-container" id="scr-profile">
+                  <div class="screen-content scrollable padding-bottom-nav">
+                    <!-- Profile Header Card -->
+                    <div class="profile-header-card">
+                      <div class="profile-avatar-row">
+                        <div class="profile-avatar-large">AR</div>
+                        <span class="verified-badge-absolute">
+                          <span class="material-icons-round icon-small">verified</span>
+                        </span>
+                      </div>
+                      <h3 class="profile-name">Alex Rivera</h3>
+                      <p class="profile-email">alex.rivera@stanford.edu</p>
+                      <span class="badge-pill bg-primary-light">Stanford University • Junior</span>
+                    </div>
+
+                    <!-- Settings List Card Layout -->
+                    <div class="settings-group-card">
+                      <div class="settings-item" onclick="navigateTo('tracking')">
+                        <div class="settings-item-left">
+                          <span class="material-icons-round text-success">local_shipping</span>
+                          <span>Track Active Order</span>
+                        </div>
+                        <span class="material-icons-round text-gray">chevron_right</span>
+                      </div>
+                      <div class="settings-item" onclick="navigateTo('my-listings')">
+                        <div class="settings-item-left">
+                          <span class="material-icons-round text-primary">list_alt</span>
+                          <span>My Listings</span>
+                        </div>
+                        <span class="material-icons-round text-gray">chevron_right</span>
+                      </div>
+                      <div class="settings-item" onclick="showNotification('Wishlist features loaded!')">
+                        <div class="settings-item-left">
+                          <span class="material-icons-round text-red">favorite</span>
+                          <span>Wishlist</span>
+                        </div>
+                        <span class="material-icons-round text-gray">chevron_right</span>
+                      </div>
+                      <div class="settings-item" onclick="showNotification('No active boards matching requests')">
+                        <div class="settings-item-left">
+                          <span class="material-icons-round text-success">feedback</span>
+                          <span>Need Board</span>
+                        </div>
+                        <span class="material-icons-round text-gray">chevron_right</span>
+                      </div>
+                      <div class="settings-item" onclick="navigateTo('chats')">
+                        <div class="settings-item-left">
+                          <span class="material-icons-round text-orange">chat</span>
+                          <span>Messages</span>
+                        </div>
+                        <span class="material-icons-round text-gray">chevron_right</span>
+                      </div>
+                    </div>
+
+                    <div class="settings-group-card">
+                      <div class="settings-item" onclick="showNotification('Notifications are up to date!')">
+                        <div class="settings-item-left">
+                          <span class="material-icons-round text-purple">notifications</span>
+                          <span>Notifications</span>
+                        </div>
+                        <span class="material-icons-round text-gray">chevron_right</span>
+                      </div>
+                      <div class="settings-item" onclick="showNotification('Help Desk is offline')">
+                        <div class="settings-item-left">
+                          <span class="material-icons-round text-blue">help_outline</span>
+                          <span>Help Center</span>
+                        </div>
+                        <span class="material-icons-round text-gray">chevron_right</span>
+                      </div>
+                      <div class="settings-item" onclick="showNotification('Privacy details locked in draft')">
+                        <div class="settings-item-left">
+                          <span class="material-icons-round text-gray">lock</span>
+                          <span>Privacy Policy</span>
+                        </div>
+                        <span class="material-icons-round text-gray">chevron_right</span>
+                      </div>
+                    </div>
+
+                    <div class="settings-group-card">
+                      <div class="settings-item logout" onclick="logoutUser()">
+                        <div class="settings-item-left">
+                          <span class="material-icons-round text-red">logout</span>
+                          <span>Logout</span>
+                        </div>
+                        <span class="material-icons-round text-gray">chevron_right</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 13. Checkout Screen -->
+                <div class="screen-container" id="scr-checkout">
+                  <div class="screen-content scrollable padding-bottom-nav">
+                    <div class="screen-header">
+                      <button class="btn-back" onclick="navigateBack()"><span class="material-icons-round">arrow_back_ios</span></button>
+                      <h3>Secure Checkout</h3>
+                      <div style="width:24px"></div>
+                    </div>
+                    
+                    <div class="checkout-body">
+                      <!-- Item Preview Card -->
+                      <div class="checkout-item-card">
+                        <img id="checkout-item-image" src="" alt="Item Image">
+                        <div class="checkout-item-info">
+                          <h4 id="checkout-item-title">Item Title</h4>
+                          <span id="checkout-item-price">₹0.00</span>
+                        </div>
+                      </div>
+
+                      <!-- Delivery Options -->
+                      <div class="checkout-section">
+                        <h4>Delivery Method</h4>
+                        <div class="checkout-options-list">
+                          <label class="checkout-option active" id="delivery-pickup" onclick="selectCheckoutDelivery('pickup')">
+                            <input type="radio" name="delivery" checked>
+                            <div class="option-details">
+                              <span class="option-title">Campus Handover</span>
+                              <span class="option-sub">Meet seller on campus (Free)</span>
+                            </div>
+                            <span class="option-price">₹0</span>
+                          </label>
+                          <label class="checkout-option" id="delivery-ship" onclick="selectCheckoutDelivery('ship')">
+                            <input type="radio" name="delivery">
+                            <div class="option-details">
+                              <span class="option-title">Deliver to Dorm</span>
+                              <span class="option-sub">Dispatched via student courier</span>
+                            </div>
+                            <span class="option-price">₹40</span>
+                          </label>
+                        </div>
+                        
+                        <button class="btn-app-secondary" id="btn-detect-location" onclick="detectUserLocation()" style="margin-top: 12px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border-radius: 12px;">
+                          <span class="material-icons-round" style="font-size: 16px;">my_location</span>
+                          <span>Pin GPS Location</span>
+                        </button>
+                        <span id="lbl-location-coords" style="font-size: 10px; color: var(--text-secondary); margin-top: 6px; display: block; text-align: center;">Location coordinates not pinned</span>
+                      </div>
+
+                      <!-- Payment Options -->
+                      <div class="checkout-section">
+                        <h4>Payment Method</h4>
+                        <div class="checkout-options-list">
+                          <label class="checkout-option active" id="payment-upi" onclick="selectCheckoutPayment('upi')">
+                            <input type="radio" name="payment" checked>
+                            <div class="option-details">
+                              <span class="option-title">UPI / Google Pay</span>
+                              <span class="option-sub">Instant transfer using phone app</span>
+                            </div>
+                          </label>
+                          <label class="checkout-option" id="payment-cash" onclick="selectCheckoutPayment('cash')">
+                            <input type="radio" name="payment">
+                            <div class="option-details">
+                              <span class="option-title">Pay on Pickup</span>
+                              <span class="option-sub">Cash or UPI during handover</span>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+
+                      <!-- Order Summary -->
+                      <div class="checkout-section">
+                        <h4>Order Summary</h4>
+                        <div class="summary-card">
+                          <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="summary-subtotal">₹0</span>
+                          </div>
+                          <div class="summary-row">
+                            <span>Delivery fee</span>
+                            <span id="summary-delivery">₹0</span>
+                          </div>
+                          <hr class="summary-divider">
+                          <div class="summary-row total">
+                            <span>Total Amount</span>
+                            <span id="summary-total">₹0</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button class="btn-app-primary ripple" onclick="placeOrder()">Place Order</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 14. Order Tracking Screen -->
+                <div class="screen-container" id="scr-tracking">
+                  <div class="screen-content scrollable padding-bottom-nav">
+                    <div class="screen-header">
+                      <button class="btn-back" onclick="navigateTo('home')"><span class="material-icons-round">home</span></button>
+                      <h3>Order Tracking</h3>
+                      <div style="width:24px"></div>
+                    </div>
+                    
+                    <div class="tracking-body">
+                      <!-- Live Map Animation -->
+                      <div class="tracking-map-container">
+                        <svg viewBox="0 0 300 120" width="100%" height="120" class="tracking-map-svg">
+                          <rect width="100%" height="100%" fill="var(--bg-input)" rx="12"/>
+                          <path d="M 0,20 L 300,20 M 0,60 L 300,60 M 0,100 L 300,100 M 40,0 L 40,120 M 120,0 L 120,120 M 200,0 L 200,120 M 280,0 L 280,120" stroke="var(--border-light)" stroke-width="1"/>
+                          <path id="map-delivery-path" d="M 30,80 L 130,80 L 130,40 L 250,40" fill="none" stroke="var(--primary)" stroke-width="3" stroke-dasharray="6,4"/>
+                          <circle cx="30" cy="80" r="6" fill="#FF5E36"/>
+                          <text x="30" y="98" font-family="Poppins" font-size="8" font-weight="700" fill="var(--text-secondary)" text-anchor="middle">Seller</text>
+                          <circle cx="250" cy="40" r="6" fill="#00D4A6"/>
+                          <text x="250" y="24" font-family="Poppins" font-size="8" font-weight="700" fill="var(--text-secondary)" text-anchor="middle">You</text>
+                          <g id="map-courier-marker" transform="translate(30,80)">
+                            <circle cx="0" cy="0" r="10" fill="var(--primary)" opacity="0.2" class="pulse-marker"/>
+                            <circle cx="0" cy="0" r="5" fill="var(--primary)"/>
+                          </g>
+                        </svg>
+                        <div class="tracking-map-banner">
+                          <span class="material-icons-round text-primary animate-spin">local_shipping</span>
+                          <span id="tracking-map-status">Simulating delivery path...</span>
+                        </div>
+                      </div>
+
+                      <!-- Stepper UI -->
+                      <div class="tracking-stepper">
+                        <div class="step-item active" id="step-placed">
+                          <div class="step-icon-wrapper">
+                            <span class="material-icons-round">check_circle</span>
+                          </div>
+                          <div class="step-info">
+                            <span class="step-title">Order Placed</span>
+                            <span class="step-time" id="time-placed">Just Now</span>
+                          </div>
+                        </div>
+                        <div class="step-divider" id="div-pickup"></div>
+                        
+                        <div class="step-item" id="step-pickup">
+                          <div class="step-icon-wrapper">
+                            <span class="material-icons-round">local_shipping</span>
+                          </div>
+                          <div class="step-info">
+                            <span class="step-title">Courier Picked Up</span>
+                            <span class="step-time" id="time-pickup">Pending</span>
+                          </div>
+                        </div>
+                        <div class="step-divider" id="div-way"></div>
+                        
+                        <div class="step-item" id="step-way">
+                          <div class="step-icon-wrapper">
+                            <span class="material-icons-round">directions_run</span>
+                          </div>
+                          <div class="step-info">
+                            <span class="step-title">On the Way</span>
+                            <span class="step-time" id="time-way">Pending</span>
+                          </div>
+                        </div>
+                        <div class="step-divider" id="div-near"></div>
+                        
+                        <div class="step-item" id="step-near">
+                          <div class="step-icon-wrapper">
+                            <span class="material-icons-round">location_on</span>
+                          </div>
+                          <div class="step-info">
+                            <span class="step-title">Arriving (Near you 100m)</span>
+                            <span class="step-time" id="time-near">Pending</span>
+                          </div>
+                        </div>
+                        <div class="step-divider" id="div-delivered"></div>
+                        
+                        <div class="step-item" id="step-delivered">
+                          <div class="step-icon-wrapper">
+                            <span class="material-icons-round">verified</span>
+                          </div>
+                          <div class="step-info">
+                            <span class="step-title">Delivered & Completed</span>
+                            <span class="step-time" id="time-delivered">Pending</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Live logs / feed -->
+                      <div class="tracking-logs-section">
+                        <h4>Activity Feed</h4>
+                        <div class="tracking-logs-list" id="tracking-logs-list">
+                          <div class="log-item latest">
+                            <span class="log-dot"></span>
+                            <div class="log-info">
+                              <span class="log-text">Order accepted by seller. Courier assigned.</span>
+                              <span class="log-time">Just Now</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button class="btn-app-secondary ripple" onclick="navigateTo('home')" style="margin-top: 10px;">Return to Home</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div> <!-- End phone-screens-viewport -->
+
+              <!-- Dynamic Component: Bottom Navigation Bar -->
+              <nav class="phone-bottom-nav" id="phone-nav-bar">
+                <button class="nav-item active" data-tab="home" onclick="navTabClick('home')">
+                  <span class="material-icons-round">home</span>
+                  <span>Home</span>
+                </button>
+                <button class="nav-item" data-tab="search-filter" onclick="navTabClick('search-filter')">
+                  <span class="material-icons-round">search</span>
+                  <span>Search</span>
+                </button>
+                <button class="nav-item nav-add" data-tab="add-listing" onclick="navTabClick('add-listing')">
+                  <div class="add-btn-circle shadow-premium">
+                    <span class="material-icons-round">add</span>
+                  </div>
+                  <span class="nav-add-label">Sell</span>
+                </button>
+                <button class="nav-item" data-tab="chats" onclick="navTabClick('chats')">
+                  <span class="material-icons-round">chat_bubble</span>
+                  <span>Chats</span>
+                </button>
+                <button class="nav-item" data-tab="profile" onclick="navTabClick('profile')">
+                  <span class="material-icons-round">person</span>
+                  <span>Profile</span>
+                </button>
+              </nav>
+
+              <!-- Dynamic Component Overlay: Success Dialog (Full Modal) -->
+              <div class="modal-overlay" id="comp-success-dialog">
+                <div class="modal-card">
+                  <div class="modal-icon-wrapper success">
+                    <span class="material-icons-round">check_circle</span>
+                  </div>
+                  <h3>Success!</h3>
+                  <p id="success-dialog-msg">Your listing has been successfully published to CampusConnect.</p>
+                  <button class="btn-app-primary" onclick="closeModal('comp-success-dialog')">Done</button>
+                </div>
+              </div>
+
+              <!-- Dynamic Component Overlay: Error Dialog (Full Modal) -->
+              <div class="modal-overlay" id="comp-error-dialog">
+                <div class="modal-card">
+                  <div class="modal-icon-wrapper error">
+                    <span class="material-icons-round">error</span>
+                  </div>
+                  <h3>Oops!</h3>
+                  <p id="error-dialog-msg">Unable to process your request. Please check your internet connection and try again.</p>
+                  <button class="btn-app-primary" onclick="closeModal('comp-error-dialog')">Try Again</button>
+                </div>
+              </div>
+
+              <!-- Dynamic Component Overlay: Bottom Sheet -->
+              <div class="bottom-sheet-overlay" id="comp-bottom-sheet" onclick="closeBottomSheetOnBgClick(event)">
+                <div class="bottom-sheet-content">
+                  <div class="bottom-sheet-drag-handle"></div>
+                  <h3 id="bottom-sheet-title">Sheet Action Options</h3>
+                  <div class="bottom-sheet-list" id="bottom-sheet-items">
+                    <!-- Dynamic choices -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dynamic Component: Snackbar -->
+              <div class="snackbar-toast" id="comp-snackbar">
+                <span class="snackbar-text" id="snackbar-msg">Notifications activated.</span>
+              </div>
+
+              <!-- Dynamic Component: Google Account Chooser Modal -->
+              <div class="modal-overlay" id="comp-google-modal">
+                <div class="modal-card" style="padding: 24px; max-width: 320px;">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google Logo" style="height:20px; margin: 8px auto 16px auto; display:block;">
+                  <h4 style="font-size: 13px; font-weight:600; color:var(--text-main); margin-bottom: 16px; text-align: center;">Sign in with Google</h4>
+                  
+                  <div style="display:flex; flex-direction:column; gap:10px; width:100%; margin-bottom:16px;">
+                    <div style="text-align:left;">
+                      <label style="font-size:10px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Google Email</label>
+                      <input type="email" id="google-email-input" placeholder="name@gmail.com" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                    <div style="text-align:left;">
+                      <label style="font-size:10px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Full Name</label>
+                      <input type="text" id="google-name-input" placeholder="Your Name" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-light); font-size:12px; outline:none; background:var(--bg-input); color:var(--text-main);">
+                    </div>
+                  </div>
+                  
+                  <button class="btn-app-primary" onclick="submitCustomGoogleAccount()" style="padding:12px; font-size:13px; width:100%; margin-bottom:10px; border-radius:10px;">Sign In</button>
+                  <button class="btn-app-secondary" onclick="closeModal('comp-google-modal')" style="padding:12px; font-size:13px; width:100%; border-radius:10px;">Cancel</button>
+                </div>
+              </div>
+
+
+            </div> <!-- End phone-screen -->
+          </div> <!-- End phone-case -->
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab 2: High Fidelity Grid View -->
+    <div id="view-content-grid" class="view-content">
+      <div class="screens-grid-presentation">
+        <!-- Render 12 Mockup cards side-by-side using CSS grid -->
+        <!-- Each cards is styled as a mini mockup showing the layout -->
+        
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">01. Splash Screen</div>
+          <div class="mockup-iframe-container" data-screen-type="splash"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">02. Login</div>
+          <div class="mockup-iframe-container" data-screen-type="login"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">03. Register</div>
+          <div class="mockup-iframe-container" data-screen-type="register"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">04. Home</div>
+          <div class="mockup-iframe-container" data-screen-type="home"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">05. Categories</div>
+          <div class="mockup-iframe-container" data-screen-type="categories"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">06. Search & Filter</div>
+          <div class="mockup-iframe-container" data-screen-type="search-filter"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">07. Product Details</div>
+          <div class="mockup-iframe-container" data-screen-type="product-details"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">08. Add Listing</div>
+          <div class="mockup-iframe-container" data-screen-type="add-listing"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">09. Chats</div>
+          <div class="mockup-iframe-container" data-screen-type="chats"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">10. Chat Conversation</div>
+          <div class="mockup-iframe-container" data-screen-type="chat-screen"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">11. My Listings</div>
+          <div class="mockup-iframe-container" data-screen-type="my-listings"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">12. Profile</div>
+          <div class="mockup-iframe-container" data-screen-type="profile"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">13. Secure Checkout</div>
+          <div class="mockup-iframe-container" data-screen-type="checkout"></div>
+        </div>
+
+        <div class="grid-mockup-item">
+          <div class="grid-mockup-header">14. Order Tracking</div>
+          <div class="mockup-iframe-container" data-screen-type="tracking"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab 3: Design System Explorer -->
+    <div id="view-content-design-system" class="view-content">
+      <div class="design-system-container">
+        
+        <!-- Colors Grid -->
+        <div class="ds-section">
+          <h2>Brand Color Palette</h2>
+          <div class="ds-grid-colors">
+            <div class="color-swatch">
+              <div class="swatch-color" style="background:#6C4CF7"></div>
+              <div class="swatch-label">Primary (Purple)</div>
+              <div class="swatch-hex">#6C4CF7</div>
+            </div>
+            <div class="color-swatch">
+              <div class="swatch-color" style="background:#8B7CFF"></div>
+              <div class="swatch-label">Secondary</div>
+              <div class="swatch-hex">#8B7CFF</div>
+            </div>
+            <div class="color-swatch">
+              <div class="swatch-color" style="background:#00D4A6"></div>
+              <div class="swatch-label">Accent</div>
+              <div class="swatch-hex">#00D4A6</div>
+            </div>
+            <div class="color-swatch">
+              <div class="swatch-color" style="background:#F8F9FD; border:1px solid #ddd"></div>
+              <div class="swatch-label">Light Background</div>
+              <div class="swatch-hex">#F8F9FD</div>
+            </div>
+            <div class="color-swatch">
+              <div class="swatch-color" style="background:#101114"></div>
+              <div class="swatch-label">Dark Background</div>
+              <div class="swatch-hex">#101114</div>
+            </div>
+            <div class="color-swatch">
+              <div class="swatch-color" style="background:#FFFFFF; border:1px solid #ddd"></div>
+              <div class="swatch-label">Cards</div>
+              <div class="swatch-hex">#FFFFFF</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Typography -->
+        <div class="ds-section">
+          <h2>Typography Rules</h2>
+          <div class="ds-typography-block">
+            <div class="typo-row">
+              <span class="typo-tag">Heading 1</span>
+              <span class="typo-example" style="font-family:'Poppins', sans-serif; font-size:32px; font-weight:800;">CampusConnect Bold Headings</span>
+            </div>
+            <div class="typo-row">
+              <span class="typo-tag">Heading 2</span>
+              <span class="typo-example" style="font-family:'Poppins', sans-serif; font-size:24px; font-weight:700;">Buy. Sell. Connect.</span>
+            </div>
+            <div class="typo-row">
+              <span class="typo-tag">Body Main</span>
+              <span class="typo-example" style="font-family:'Plus Jakarta Sans', sans-serif; font-size:15px; font-weight:400;">Clean SF Pro/Poppins spacing. Apple-level premium UI mixed with Google's Material 3. Highly legible, touch-friendly, optimized contrast.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Component States -->
+        <div class="ds-section">
+          <h2>Component States Showcase</h2>
+          <div class="ds-components-showcase">
+            <div class="ds-comp-column">
+              <h3>Buttons & Toggles</h3>
+              <button class="btn-app-primary" style="margin-bottom: 12px;">App Primary Button</button>
+              <button class="btn-app-secondary" style="margin-bottom: 12px;">App Secondary Button</button>
+              <div class="quick-chips" style="margin-bottom: 12px; gap:8px;">
+                <span class="quick-chip active">Chip Active</span>
+                <span class="quick-chip">Chip Inactive</span>
+              </div>
+            </div>
+            
+            <div class="ds-comp-column">
+              <h3>Skeletons & States</h3>
+              <!-- Skeleton Loaders -->
+              <div class="skeleton-preview-card">
+                <div class="skeleton-shimmer skeleton-img"></div>
+                <div class="skeleton-shimmer skeleton-line-title"></div>
+                <div class="skeleton-shimmer skeleton-line-sub"></div>
+              </div>
+            </div>
+
+            <div class="ds-comp-column">
+              <h3>Empty States Illustrations</h3>
+              <div class="ds-empty-states-row">
+                <div class="ds-mini-empty">
+                  <span class="material-icons-round text-gray">search_off</span>
+                  <span>No Listings</span>
+                </div>
+                <div class="ds-mini-empty">
+                  <span class="material-icons-round text-red">wifi_off</span>
+                  <span>No Internet</span>
+                </div>
+                <div class="ds-mini-empty">
+                  <span class="material-icons-round text-primary">error_outline</span>
+                  <span>404 page</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="showcase-footer">
+    <p>&copy; 2026 CampusConnect Startup. All rights reserved. Created for premium mobile UI/UX display.</p>
+  </footer>
+
+  <!-- Floating Exit Full Screen Button -->
+  <button id="btn-exit-fullscreen" class="exit-fullscreen-btn">
+    <span class="material-icons-round" style="font-size:16px;">close</span>
+    Exit Full Screen
+  </button>
+
+  <!-- Firebase App and Auth SDKs for Real SMS verification -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  
+  <!-- Recaptcha Container for Firebase Phone Verification -->
+  <div id="recaptcha-container" style="display:none;"></div>
+
+  <!-- App Logic script -->
+  <script src="app.js"></script>
+</body>
+</html>

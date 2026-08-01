@@ -1,0 +1,31 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Profile photos
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) && request.resource.size < 5 * 1024 * 1024; // 5MB limit
+    }
+
+    // Product item images
+    match /items/{itemId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.resource.size < 10 * 1024 * 1024; // 10MB limit
+    }
+    
+    // Chat message attachments
+    match /chats/{chatId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.resource.size < 15 * 1024 * 1024; // 15MB limit
+    }
+  }
+}
