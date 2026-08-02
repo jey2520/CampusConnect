@@ -12,7 +12,7 @@ class TrackingView extends ConsumerStatefulWidget {
 }
 
 class _TrackingViewState extends ConsumerState<TrackingView> {
-  bool _showActiveTab = true;
+  int _selectedTab = 0; // 0: Active, 1: Completed, 2: Cancelled
   String? _selectedOrderId;
 
   @override
@@ -68,7 +68,7 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
 
         final allOrders = snapshot.data?.docs ?? [];
 
-        // Split into Active and Completed/Cancelled
+        // Split into Active, Completed, and Cancelled
         final activeOrders = allOrders.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
           final status = data['status'] as String? ?? 'Pending';
@@ -78,11 +78,17 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
         final completedOrders = allOrders.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
           final status = data['status'] as String? ?? 'Pending';
-          return status == 'Delivered' || status == 'Cancelled';
+          return status == 'Delivered';
+        }).toList();
+
+        final cancelledOrders = allOrders.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          final status = data['status'] as String? ?? 'Pending';
+          return status == 'Cancelled';
         }).toList();
 
         // If there's exactly 1 active order, auto-select it when on active tab
-        if (_showActiveTab && activeOrders.length == 1 && _selectedOrderId == null) {
+        if (_selectedTab == 0 && activeOrders.length == 1 && _selectedOrderId == null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               setState(() {
@@ -98,7 +104,7 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
         if (isDetailView) {
           currentOrder = allOrders.firstWhere(
             (doc) => doc.id == _selectedOrderId,
-            orElse: () => allOrders.first, // Fallback (should not occur)
+            orElse: () => allOrders.first, // Fallback
           );
         }
 
@@ -127,7 +133,7 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
             centerTitle: true,
           ),
           body: isDetailView
-              ? _buildOrderTracker(currentOrder!, theme)
+              ? _buildOrderTracker(currentOrder!, theme, user.id)
               : Column(
                   children: [
                     // Tab Bar selection switcher
@@ -135,19 +141,14 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
                       color: theme.colorScheme.surface,
                       child: Row(
                         children: [
-                          _buildTabButton('Active Orders (${activeOrders.length})', showActive: true),
-                          _buildTabButton('Order History (${completedOrders.length})', showActive: false),
+                          _buildTabButton('Active (${activeOrders.length})', 0),
+                          _buildTabButton('Completed (${completedOrders.length})', 1),
+                          _buildTabButton('Cancelled (${cancelledOrders.length})', 2),
                         ],
                       ),
                     ),
                     Expanded(
-                      child: _showActiveTab
-                          ? (activeOrders.isEmpty
-                              ? _buildEmptyState(theme)
-                              : _buildOrderList(activeOrders, theme))
-                          : (completedOrders.isEmpty
-                              ? _buildEmptyStateHistory(theme)
-                              : _buildOrderList(completedOrders, theme)),
+                      child: _buildTabContent(activeOrders, completedOrders, cancelledOrders, theme),
                     ),
                   ],
                 ),
@@ -156,14 +157,14 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
     );
   }
 
-  Widget _buildTabButton(String title, bool showActive) {
-    final isSelected = _showActiveTab == showActive;
+  Widget _buildTabButton(String title, int tabIndex) {
+    final isSelected = _selectedTab == tabIndex;
     final theme = Theme.of(context);
     return Expanded(
       child: GestureDetector(
         onTap: () {
           setState(() {
-            _showActiveTab = showActive;
+            _selectedTab = tabIndex;
             _selectedOrderId = null; // Reset selection
           });
         },
@@ -181,6 +182,7 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
             title,
             textAlign: TextAlign.center,
             style: TextStyle(
+              fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               color: isSelected ? theme.colorScheme.primary : Colors.grey,
             ),
@@ -190,7 +192,22 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
+  Widget _buildTabContent(
+    List<DocumentSnapshot> active,
+    List<DocumentSnapshot> completed,
+    List<DocumentSnapshot> cancelled,
+    ThemeData theme,
+  ) {
+    if (_selectedTab == 0) {
+      return active.isEmpty ? _buildEmptyState(theme, 'No Active Orders', "You haven't placed any orders yet.", true) : _buildOrderList(active, theme);
+    } else if (_selectedTab == 1) {
+      return completed.isEmpty ? _buildEmptyState(theme, 'No Completed Orders', 'Your completed orders will show up here.', false) : _buildOrderList(completed, theme);
+    } else {
+      return cancelled.isEmpty ? _buildEmptyState(theme, 'No Cancelled Orders', 'Your cancelled orders will show up here.', false) : _buildOrderList(cancelled, theme);
+    }
+  }
+
+  Widget _buildEmptyState(ThemeData theme, String title, String description, bool showButton) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 60.0),
@@ -212,7 +229,7 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
             ),
             const SizedBox(height: 24),
             Text(
-              'No Active Orders',
+              title,
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.extrabold,
                 color: theme.colorScheme.onBackground,
@@ -220,71 +237,30 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
             ),
             const SizedBox(height: 8),
             Text(
-              "You haven't placed any orders yet.",
+              description,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: theme.colorScheme.onBackground.withOpacity(0.5),
                 fontSize: 14,
               ),
             ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () => context.go('/home'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                elevation: 0,
+            if (showButton) ...[
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () => context.go('/home'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Browse Marketplace',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
               ),
-              child: const Text(
-                'Browse Marketplace',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyStateHistory(ThemeData theme) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 60.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.history_rounded,
-                size: 64,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'No Past Orders',
-              style: TextStyle(
-                fontWeight: FontWeight.extrabold,
-                fontSize: 20,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Your completed and cancelled orders will show up here.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
+            ],
           ],
         ),
       ),
@@ -303,6 +279,12 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
         final double orderPrice = (data['price'] as num?)?.toDouble() ?? 0.0;
         final String orderImage = data['image'] as String? ?? '';
         final String orderStatus = data['status'] as String? ?? 'Pending';
+        final String? cancelledBy = data['cancelledBy'] as String?;
+
+        String displayStatus = orderStatus;
+        if (orderStatus == 'Cancelled' && cancelledBy != null) {
+          displayStatus = 'Cancelled by $cancelledBy';
+        }
 
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -351,7 +333,7 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    orderStatus,
+                    displayStatus,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -378,7 +360,7 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
       case 'Delivered':
         return Colors.green;
       case 'Cancelled':
-        return Colors.red;
+        return Colors.grey;
       case 'On the Way':
       case 'Picked Up':
         return Colors.blue;
@@ -409,15 +391,24 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
     }
   }
 
-  Widget _buildOrderTracker(DocumentSnapshot doc, ThemeData theme) {
+  Widget _buildOrderTracker(DocumentSnapshot doc, ThemeData theme, String currentUserUid) {
     final data = doc.data() as Map<String, dynamic>;
     final String status = data['status'] as String? ?? 'Pending';
     final int currentStep = _getStatusStep(status);
     final isCancelled = status == 'Cancelled';
+    final String? cancelledBy = data['cancelledBy'] as String?;
+
+    final String buyerUID = data['buyerUID'] as String? ?? '';
+    final String sellerUID = data['sellerUID'] as String? ?? '';
+    final isBuyer = currentUserUid == buyerUID;
+    final isSeller = currentUserUid == sellerUID;
+
+    final canCancel = status == 'Pending' || status == 'Accepted' || status == 'Preparing';
+    final showBuyerOnWayWarning = isBuyer && !canCancel && status != 'Delivered' && status != 'Cancelled';
 
     double markerX = 30.0;
     double markerY = 80.0;
-    bool showMarker = true;
+    bool showMarker = !isCancelled;
     String statusDesc = '';
 
     switch (status) {
@@ -453,7 +444,7 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
         break;
       case 'Cancelled':
         showMarker = false;
-        statusDesc = 'Order was cancelled.';
+        statusDesc = cancelledBy != null ? 'Cancelled by $cancelledBy' : 'Order was cancelled.';
         break;
     }
 
@@ -466,18 +457,18 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.grey.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                border: Border.all(color: Colors.grey.withOpacity(0.3)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.cancel, color: Colors.red),
-                  SizedBox(width: 8),
+                  const Icon(Icons.cancel_rounded, color: Colors.grey),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'This order has been cancelled.',
-                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                      cancelledBy != null ? 'Cancelled by $cancelledBy' : 'Order Cancelled',
+                      style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -486,62 +477,105 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
             const SizedBox(height: 16),
           ],
 
-          // Map Visual Card Container
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: theme.colorScheme.onBackground.withOpacity(0.05)),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: theme.brightness == Brightness.dark 
-                        ? const Color(0xFF1D1F26) 
-                        : const Color(0xFFF1F2F6),
-                    borderRadius: BorderRadius.circular(12),
+          // Map Visual Card Container (Greyed out if Cancelled)
+          Opacity(
+            opacity: isCancelled ? 0.5 : 1.0,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: theme.colorScheme.onBackground.withOpacity(0.05)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: theme.brightness == Brightness.dark 
+                          ? const Color(0xFF1D1F26) 
+                          : const Color(0xFFF1F2F6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Stack(
+                      children: [
+                        CustomPaint(
+                          size: const Size(double.infinity, 120),
+                          painter: MapPathPainter(
+                            primaryColor: isCancelled ? Colors.grey : theme.colorScheme.primary,
+                            markerX: markerX,
+                            markerY: markerY,
+                            showMarker: showMarker,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Stack(
+                  const SizedBox(height: 12),
+                  Row(
                     children: [
-                      CustomPaint(
-                        size: const Size(double.infinity, 120),
-                        painter: MapPathPainter(
-                          primaryColor: theme.colorScheme.primary,
-                          markerX: markerX,
-                          markerY: markerY,
-                          showMarker: showMarker,
+                      Icon(
+                        isCancelled ? Icons.cancel_outlined : Icons.local_shipping,
+                        color: isCancelled ? Colors.grey : const Color(0xFF6C4CF7),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          statusDesc,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: isCancelled ? Colors.grey : theme.colorScheme.onBackground,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(
-                      isCancelled ? Icons.cancel_outlined : Icons.local_shipping,
-                      color: isCancelled ? Colors.red : const Color(0xFF6C4CF7),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        statusDesc,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 24),
 
-          // Stepper UI
-          _buildStepper(theme, currentStep, status),
+          // Stepper UI (Greyed out if Cancelled)
+          Opacity(
+            opacity: isCancelled ? 0.4 : 1.0,
+            child: _buildStepper(theme, currentStep, status),
+          ),
           const SizedBox(height: 24),
+
+          // Action Buttons: Cancel Button / Buyer On Way Warning
+          if (canCancel) ...[
+            OutlinedButton(
+              onPressed: () => _showCancelConfirmation(context, doc, isBuyer ? 'Buyer' : 'Seller'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: const Text('Cancel Order', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 12),
+          ] else if (showBuyerOnWayWarning) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.error.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Your order is already on the way and can no longer be cancelled.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: theme.colorScheme.error,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
 
           ElevatedButton(
             onPressed: () {
@@ -561,6 +595,123 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
         ],
       ),
     );
+  }
+
+  void _showCancelConfirmation(BuildContext context, DocumentSnapshot orderDoc, String cancelledByRole) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Cancel this Order?'),
+        content: const Text(
+          'Are you sure you want to cancel this order?\nThis action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Keep Order', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _cancelOrder(context, orderDoc, cancelledByRole);
+            },
+            child: const Text('Cancel Order', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _cancelOrder(BuildContext context, DocumentSnapshot orderDoc, String cancelledByRole) async {
+    final data = orderDoc.data() as Map<String, dynamic>;
+    final String orderId = orderDoc.id;
+    final String buyerUID = data['buyerUID'] as String? ?? '';
+    final String sellerUID = data['sellerUID'] as String? ?? '';
+    final String listingID = data['listingID'] as String? ?? '';
+    final String title = data['title'] as String? ?? 'Campus Product';
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+
+      // 1. Update order document status
+      final orderRef = FirebaseFirestore.instance.collection('orders').doc(orderId);
+      batch.update(orderRef, {
+        'status': 'Cancelled',
+        'cancelledBy': cancelledByRole,
+        'cancelledAt': FieldValue.serverTimestamp(),
+      });
+
+      // 2. Make the product listing available again
+      final itemRef = FirebaseFirestore.instance.collection('items').doc(listingID);
+      batch.update(itemRef, {
+        'status': 'active',
+      });
+
+      // 3. Create notifications for BOTH Buyer and Seller
+      final buyerNotificationRef = FirebaseFirestore.instance.collection('notifications').doc();
+      final sellerNotificationRef = FirebaseFirestore.instance.collection('notifications').doc();
+
+      final String buyerNotifBody = cancelledByRole == 'Buyer'
+          ? 'You cancelled your order for $title.'
+          : 'Seller cancelled your order for $title.';
+      
+      final String sellerNotifBody = cancelledByRole == 'Buyer'
+          ? 'Buyer cancelled the order for $title.'
+          : 'You cancelled the order for $title.';
+
+      batch.set(buyerNotificationRef, {
+        'userUid': buyerUID,
+        'title': 'Order Cancelled',
+        'body': buyerNotifBody,
+        'type': 'order',
+        'referenceId': orderId,
+        'read': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      batch.set(sellerNotificationRef, {
+        'userUid': sellerUID,
+        'title': 'Order Cancelled',
+        'body': sellerNotifBody,
+        'type': 'order',
+        'referenceId': orderId,
+        'read': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      await batch.commit();
+
+      if (!mounted) return;
+      Navigator.pop(context); // Dismiss loading dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Order cancelled successfully.'),
+          backgroundColor: Colors.grey,
+        ),
+      );
+
+      setState(() {
+        _selectedOrderId = null; // Return to list view
+      });
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Dismiss loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to cancel order: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildStepper(ThemeData theme, int currentStep, String status) {
@@ -596,8 +747,8 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
     }
 
     Color color;
-    if (isCancelled && index >= currentStep) {
-      color = Colors.red.withOpacity(0.3);
+    if (isCancelled) {
+      color = Colors.grey.withOpacity(0.2);
       icon = Icons.close;
     } else if (isCompleted) {
       color = Colors.green;
@@ -637,6 +788,7 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
               ),
             ],
           ),
+          key: ValueKey('step-$index'),
         ),
       ],
     );
@@ -702,11 +854,11 @@ class MapPathPainter extends CustomPainter {
     final nodePaint = Paint()..style = PaintingStyle.fill;
 
     // Seller Node
-    nodePaint.color = Colors.redAccent;
+    nodePaint.color = Colors.redAccent.withOpacity(primaryColor == Colors.grey ? 0.4 : 1.0);
     canvas.drawCircle(const Offset(30, 80), 6, nodePaint);
 
     // Buyer Node
-    nodePaint.color = const Color(0xFF00D4A6);
+    nodePaint.color = const Color(0xFF00D4A6).withOpacity(primaryColor == Colors.grey ? 0.4 : 1.0);
     canvas.drawCircle(const Offset(250, 40), 6, nodePaint);
 
     if (showMarker) {
@@ -727,6 +879,6 @@ class MapPathPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant MapPathPainter oldDelegate) {
-    return oldDelegate.markerX != markerX || oldDelegate.markerY != markerY || oldDelegate.showMarker != showMarker;
+    return oldDelegate.markerX != markerX || oldDelegate.markerY != markerY || oldDelegate.showMarker != showMarker || oldDelegate.primaryColor != primaryColor;
   }
 }

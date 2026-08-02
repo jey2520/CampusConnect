@@ -1067,8 +1067,9 @@
                     <div class="tracking-list-container" id="tracking-list-container" style="display: none; padding: 12px;">
                       <!-- Tab switcher inside tracking -->
                       <div style="display: flex; border-bottom: 1px solid var(--border-light); margin-bottom: 12px;">
-                        <button id="tab-active-orders" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 2px solid var(--primary); font-weight: 700; color: var(--primary); cursor: pointer; font-family: inherit;" onclick="switchTrackingTab(true)">Active Orders</button>
-                        <button id="tab-completed-orders" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 2px solid transparent; font-weight: 500; color: var(--text-secondary); cursor: pointer; font-family: inherit;" onclick="switchTrackingTab(false)">Order History</button>
+                        <button id="tab-active-orders" style="flex: 1; padding: 8px; background: none; border: none; border-bottom: 2px solid var(--primary); font-weight: 700; color: var(--primary); cursor: pointer; font-family: inherit; font-size: 11px;" onclick="switchTrackingTab(0)">Active</button>
+                        <button id="tab-completed-orders" style="flex: 1; padding: 8px; background: none; border: none; border-bottom: 2px solid transparent; font-weight: 500; color: var(--text-secondary); cursor: pointer; font-family: inherit; font-size: 11px;" onclick="switchTrackingTab(1)">Completed</button>
+                        <button id="tab-cancelled-orders" style="flex: 1; padding: 8px; background: none; border: none; border-bottom: 2px solid transparent; font-weight: 500; color: var(--text-secondary); cursor: pointer; font-family: inherit; font-size: 11px;" onclick="switchTrackingTab(2)">Cancelled</button>
                       </div>
                       <div id="tracking-orders-list-view"></div>
                     </div>
@@ -1167,6 +1168,14 @@
                         </div>
                       </div>
 
+                      <!-- Buyer/Seller Cancellation -->
+                      <div id="tracking-cancel-section" style="margin-top: 16px; margin-bottom: 8px;">
+                        <button class="btn-app-outline ripple" id="btn-cancel-order" style="border-color: var(--danger); color: var(--danger); width: 100%; display: none;" onclick="clickCancelOrder()">Cancel Order</button>
+                        <div id="buyer-cancel-warning" style="display: none; padding: 12px; background: rgba(244, 67, 54, 0.08); border-radius: 12px; text-align: center; color: var(--danger); font-size: 11px; font-weight: bold; line-height: 1.4;">
+                          Your order is already on the way and can no longer be cancelled.
+                        </div>
+                      </div>
+
                       <button class="btn-app-secondary ripple" onclick="backToTrackingList()" style="margin-top: 10px;">Back to Orders</button>
                     </div>
                   </div>
@@ -1219,6 +1228,21 @@
                   <h3>Success!</h3>
                   <p id="success-dialog-msg">Your listing has been successfully published to CampusConnect.</p>
                   <button class="btn-app-primary" onclick="closeModal('comp-success-dialog')">Done</button>
+                </div>
+              </div>
+
+              <!-- Dynamic Component Overlay: Cancel Order Dialog -->
+              <div class="modal-overlay" id="comp-cancel-dialog">
+                <div class="modal-card">
+                  <div class="modal-icon-wrapper danger" style="background: rgba(244, 67, 54, 0.1); width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                    <span class="material-icons-round" style="color: var(--danger); font-size: 32px;">warning</span>
+                  </div>
+                  <h3>Cancel this Order?</h3>
+                  <p>Are you sure you want to cancel this order?<br>This action cannot be undone.</p>
+                  <div class="modal-actions" style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button class="btn-app-secondary ripple" style="flex: 1;" onclick="closeCancelDialog()">Keep Order</button>
+                    <button class="btn-app ripple" style="flex: 1; background: var(--danger); border-color: var(--danger); color: white;" onclick="confirmCancelOrder()">Cancel Order</button>
+                  </div>
                 </div>
               </div>
 

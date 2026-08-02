@@ -1220,7 +1220,7 @@ function detectUserLocation() {
 }
 
 let currentTrackingOrders = [];
-let trackingTabActive = true;
+let selectedTrackingTab = 0; // 0: Active, 1: Completed, 2: Cancelled
 let selectedTrackingOrderId = null;
 let ordersListener = null;
 
@@ -1294,14 +1294,15 @@ function startOrdersListener() {
 
 function renderTrackingState(orders) {
   const activeOrders = orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
-  const completedOrders = orders.filter(o => o.status === 'Delivered' || o.status === 'Cancelled');
+  const completedOrders = orders.filter(o => o.status === 'Delivered');
+  const cancelledOrders = orders.filter(o => o.status === 'Cancelled');
 
   const emptyStateEl = document.getElementById('tracking-empty-state');
   const listContainerEl = document.getElementById('tracking-list-container');
   const detailsViewEl = document.getElementById('tracking-details-view');
 
   // Auto select if there is exactly 1 active order and no selected order yet
-  if (trackingTabActive && activeOrders.length === 1 && !selectedTrackingOrderId) {
+  if (selectedTrackingTab === 0 && activeOrders.length === 1 && !selectedTrackingOrderId) {
     selectedTrackingOrderId = activeOrders[0].id;
   }
 
@@ -1324,54 +1325,63 @@ function renderTrackingState(orders) {
   // If no selected order, show list or empty state
   detailsViewEl.style.display = 'none';
 
-  if (trackingTabActive) {
-    if (activeOrders.length === 0) {
-      emptyStateEl.style.display = 'block';
-      listContainerEl.style.display = 'none';
-      emptyStateEl.querySelector('h4').textContent = "No Active Orders";
-      emptyStateEl.querySelector('p').textContent = "You haven't placed any orders yet.";
-      emptyStateEl.querySelector('.btn-app').style.display = 'inline-block';
-    } else {
-      emptyStateEl.style.display = 'none';
-      listContainerEl.style.display = 'block';
-      renderOrdersListView(activeOrders);
-    }
+  let currentList = [];
+  let emptyTitle = '';
+  let emptyDesc = '';
+  let showBrowseButton = false;
+
+  if (selectedTrackingTab === 0) {
+    currentList = activeOrders;
+    emptyTitle = "No Active Orders";
+    emptyDesc = "You haven't placed any orders yet.";
+    showBrowseButton = true;
+  } else if (selectedTrackingTab === 1) {
+    currentList = completedOrders;
+    emptyTitle = "No Completed Orders";
+    emptyDesc = "Your completed orders will show up here.";
+    showBrowseButton = false;
   } else {
-    if (completedOrders.length === 0) {
-      emptyStateEl.style.display = 'block';
-      listContainerEl.style.display = 'none';
-      emptyStateEl.querySelector('h4').textContent = "No Past Orders";
-      emptyStateEl.querySelector('p').textContent = "Your completed and cancelled orders will show up here.";
-      emptyStateEl.querySelector('.btn-app').style.display = 'none';
-    } else {
-      emptyStateEl.style.display = 'none';
-      listContainerEl.style.display = 'block';
-      renderOrdersListView(completedOrders);
-    }
+    currentList = cancelledOrders;
+    emptyTitle = "No Cancelled Orders";
+    emptyDesc = "Your cancelled orders will show up here.";
+    showBrowseButton = false;
+  }
+
+  if (currentList.length === 0) {
+    emptyStateEl.style.display = 'block';
+    listContainerEl.style.display = 'none';
+    emptyStateEl.querySelector('h4').textContent = emptyTitle;
+    emptyStateEl.querySelector('p').textContent = emptyDesc;
+    emptyStateEl.querySelector('.btn-app').style.display = showBrowseButton ? 'inline-block' : 'none';
+  } else {
+    emptyStateEl.style.display = 'none';
+    listContainerEl.style.display = 'block';
+    renderOrdersListView(currentList);
   }
 }
 
-function switchTrackingTab(isActive) {
-  trackingTabActive = isActive;
+function switchTrackingTab(tabIndex) {
+  selectedTrackingTab = tabIndex;
   selectedTrackingOrderId = null;
   
   const tabActive = document.getElementById('tab-active-orders');
   const tabCompleted = document.getElementById('tab-completed-orders');
+  const tabCancelled = document.getElementById('tab-cancelled-orders');
   
-  if (isActive) {
-    tabActive.style.borderBottomColor = 'var(--primary)';
-    tabActive.style.color = 'var(--primary)';
-    tabActive.style.fontWeight = '700';
-    tabCompleted.style.borderBottomColor = 'transparent';
-    tabCompleted.style.color = 'var(--text-secondary)';
-    tabCompleted.style.fontWeight = '500';
-  } else {
-    tabCompleted.style.borderBottomColor = 'var(--primary)';
-    tabCompleted.style.color = 'var(--primary)';
-    tabCompleted.style.fontWeight = '700';
-    tabActive.style.borderBottomColor = 'transparent';
-    tabActive.style.color = 'var(--text-secondary)';
-    tabActive.style.fontWeight = '500';
+  // Reset all
+  [tabActive, tabCompleted, tabCancelled].forEach(el => {
+    if (el) {
+      el.style.borderBottomColor = 'transparent';
+      el.style.color = 'var(--text-secondary)';
+      el.style.fontWeight = '500';
+    }
+  });
+
+  const selectedEl = tabIndex === 0 ? tabActive : (tabIndex === 1 ? tabCompleted : tabCancelled);
+  if (selectedEl) {
+    selectedEl.style.borderBottomColor = 'var(--primary)';
+    selectedEl.style.color = 'var(--primary)';
+    selectedEl.style.fontWeight = '700';
   }
   
   renderTrackingState(currentTrackingOrders);
@@ -1390,6 +1400,82 @@ function handleTrackingBack() {
   }
 }
 
+function clickCancelOrder() {
+  document.getElementById('comp-cancel-dialog').classList.add('active');
+}
+
+function closeCancelDialog() {
+  document.getElementById('comp-cancel-dialog').classList.remove('active');
+}
+
+async function confirmCancelOrder() {
+  closeCancelDialog();
+  if (!selectedTrackingOrderId) return;
+  
+  const order = currentTrackingOrders.find(o => o.id === selectedTrackingOrderId);
+  if (!order) return;
+
+  showNotification("Cancelling your order...");
+
+  try {
+    const batch = db.batch();
+    
+    // 1. Update order document status
+    const orderRef = db.collection('orders').doc(order.id);
+    const cancelledByRole = (currentUser.uid === order.buyerUID) ? 'Buyer' : 'Seller';
+    batch.update(orderRef, {
+      status: 'Cancelled',
+      cancelledBy: cancelledByRole,
+      cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // 2. Make the product listing active again
+    const itemRef = db.collection('items').doc(order.listingID);
+    batch.update(itemRef, {
+      status: 'active'
+    });
+
+    // 3. Create notifications
+    const buyerNotificationRef = db.collection('notifications').doc();
+    const sellerNotificationRef = db.collection('notifications').doc();
+
+    const buyerNotifBody = (cancelledByRole === 'Buyer')
+      ? `You cancelled your order for ${order.title}.`
+      : `Seller cancelled your order for ${order.title}.`;
+    
+    const sellerNotifBody = (cancelledByRole === 'Buyer')
+      ? `Buyer cancelled the order for ${order.title}.`
+      : `You cancelled the order for ${order.title}.`;
+
+    batch.set(buyerNotificationRef, {
+      userUid: order.buyerUID,
+      title: 'Order Cancelled',
+      body: buyerNotifBody,
+      type: 'order',
+      referenceId: order.id,
+      read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    batch.set(sellerNotificationRef, {
+      userUid: order.sellerUID,
+      title: 'Order Cancelled',
+      body: sellerNotifBody,
+      type: 'order',
+      referenceId: order.id,
+      read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    await batch.commit();
+    showNotification("Order cancelled successfully.");
+    selectedTrackingOrderId = null;
+  } catch (error) {
+    console.error("Error cancelling order:", error);
+    showNotification("Error cancelling order: " + error.message);
+  }
+}
+
 function renderOrdersListView(ordersList) {
   const container = document.getElementById('tracking-orders-list-view');
   if (!container) return;
@@ -1402,6 +1488,12 @@ function renderOrdersListView(ordersList) {
   container.innerHTML = ordersList.map(order => {
     const statusColor = getStatusColor(order.status);
     const orderImage = order.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100';
+    
+    let displayStatus = order.status;
+    if (order.status === 'Cancelled' && order.cancelledBy) {
+      displayStatus = `Cancelled by ${order.cancelledBy}`;
+    }
+
     return `
       <div class="card shadow-premium" style="margin-bottom: 12px; padding: 12px; cursor: pointer; display: flex; align-items: center; border: 1px solid var(--border-light); border-radius: 16px; background: var(--bg-card);" onclick="selectTrackingOrder('${order.id}')">
         <img src="${orderImage}" style="width: 50px; height: 50px; border-radius: 12px; object-fit: cover; margin-right: 12px;" onerror="this.src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100'"/>
@@ -1409,7 +1501,7 @@ function renderOrdersListView(ordersList) {
           <h5 style="font-weight: 700; font-size: 14px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; color: var(--text-primary);">${order.title}</h5>
           <span style="font-weight: 800; color: var(--primary); font-size: 13px;">₹${order.price}</span>
           <div style="margin-top: 6px;">
-            <span style="background: ${statusColor}1A; color: ${statusColor}; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-block;">${order.status}</span>
+            <span style="background: ${statusColor}1A; color: ${statusColor}; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-block;">${displayStatus}</span>
           </div>
         </div>
         <span class="material-icons-round" style="color: var(--text-secondary); font-size: 16px;">chevron_right</span>
@@ -1428,7 +1520,7 @@ function getStatusColor(status) {
     case 'Delivered':
       return '#4CAF50';
     case 'Cancelled':
-      return '#F44336';
+      return '#9E9E9E';
     case 'On the Way':
     case 'Picked Up':
       return '#2196F3';
@@ -1462,10 +1554,22 @@ function getStatusStep(status) {
 function updateTrackingTimeline(order) {
   const currentStep = getStatusStep(order.status);
   const isCancelled = order.status === 'Cancelled';
+  const isBuyer = currentUser.uid === order.buyerUID;
+
+  const canCancel = order.status === 'Pending' || order.status === 'Accepted' || order.status === 'Preparing';
+  const showBuyerOnWayWarning = isBuyer && !canCancel && order.status !== 'Delivered' && order.status !== 'Cancelled';
+
+  // Toggle buttons
+  const btnCancel = document.getElementById('btn-cancel-order');
+  const divWarning = document.getElementById('buyer-cancel-warning');
+  if (btnCancel && divWarning) {
+    btnCancel.style.display = canCancel ? 'block' : 'none';
+    divWarning.style.display = showBuyerOnWayWarning ? 'block' : 'none';
+  }
 
   let markerX = 30;
   let markerY = 80;
-  let showMarker = true;
+  let showMarker = !isCancelled;
   let statusDesc = '';
 
   switch (order.status) {
@@ -1501,7 +1605,7 @@ function updateTrackingTimeline(order) {
       break;
     case 'Cancelled':
       showMarker = false;
-      statusDesc = 'Order was cancelled.';
+      statusDesc = order.cancelledBy ? `Cancelled by ${order.cancelledBy}` : 'Order was cancelled.';
       break;
   }
 
@@ -1512,6 +1616,14 @@ function updateTrackingTimeline(order) {
     courier.setAttribute('transform', `translate(${markerX},${markerY})`);
     courier.style.display = showMarker ? 'block' : 'none';
   }
+
+  // Update step visual classes (Greyed out if Cancelled)
+  document.querySelectorAll('.tracking-stepper').forEach(el => {
+    el.style.opacity = isCancelled ? '0.4' : '1.0';
+  });
+  document.querySelectorAll('.tracking-map-container').forEach(el => {
+    el.style.opacity = isCancelled ? '0.5' : '1.0';
+  });
 
   // Update step visual classes
   updateStepUI('step-placed', currentStep >= 0, currentStep > 0, isCancelled);
