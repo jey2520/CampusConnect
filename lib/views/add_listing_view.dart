@@ -27,7 +27,7 @@ class _AddListingViewState extends ConsumerState<AddListingView> {
 
   final List<String> _categories = [
     'Books', 'Electronics', 'Cycles', 'Calculators', 'Furniture', 
-    'Lab Equipment', 'Sports', 'Fashion', 'Accessories', 'Hostel', 'Miscellaneous'
+    'Lab Equipment', 'Lab Coat', 'Sports', 'Fashion', 'Accessories', 'Hostel', 'Miscellaneous'
   ];
 
   final List<String> _conditions = [

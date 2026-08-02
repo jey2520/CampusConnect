@@ -73,7 +73,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
                   DropdownButtonFormField<String>(
                     value: currentFilter.category,
                     decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
-                    items: ['All', 'Books', 'Electronics', 'Cycles', 'Calculators', 'Furniture', 'Lab Equipment', 'Sports', 'Fashion', 'Accessories', 'Hostel', 'Miscellaneous']
+                    items: ['All', 'Books', 'Electronics', 'Cycles', 'Calculators', 'Furniture', 'Lab Equipment', 'Lab Coat', 'Sports', 'Fashion', 'Accessories', 'Hostel', 'Miscellaneous']
                         .map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                     onChanged: (val) {
                       setModalState(() {

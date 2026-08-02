@@ -225,6 +225,7 @@ const MOCK_CATEGORIES = [
   { id: 'Calculators', icon: 'calculate', colorClass: 'cat-g-4' },
   { id: 'Furniture', icon: 'chair', colorClass: 'cat-g-5' },
   { id: 'Lab Equipment', icon: 'science', colorClass: 'cat-g-6' },
+  { id: 'Lab Coat', icon: 'medical_services', colorClass: 'cat-g-12' },
   { id: 'Sports', icon: 'sports_basketball', colorClass: 'cat-g-7' },
   { id: 'Fashion', icon: 'checkroom', colorClass: 'cat-g-8' },
   { id: 'Accessories', icon: 'watch', colorClass: 'cat-g-9' },

@@ -407,6 +407,7 @@
                       <span class="quick-chip active">All Items</span>
                       <span class="quick-chip" onclick="applyQuickFilter('Electronics')">Electronics</span>
                       <span class="quick-chip" onclick="applyQuickFilter('Books')">Books</span>
+                      <span class="quick-chip" onclick="applyQuickFilter('Lab Coat')">Lab Coat</span>
                       <span class="quick-chip" onclick="applyQuickFilter('Furniture')">Furniture</span>
                     </div>
 
@@ -473,6 +474,10 @@
                         <div class="cat-icon-bg"><span class="material-icons-round">science</span></div>
                         <span>Lab Equip</span>
                       </div>
+                      <div class="category-card g-12" onclick="selectCategory('Lab Coat')">
+                        <div class="cat-icon-bg"><span class="material-icons-round">medical_services</span></div>
+                        <span>Lab Coat</span>
+                      </div>
                       <div class="category-card g-7" onclick="selectCategory('Sports')">
                         <div class="cat-icon-bg"><span class="material-icons-round">sports_basketball</span></div>
                         <span>Sports</span>
@@ -518,6 +523,7 @@
                           <span class="filter-chip active" onclick="toggleFilterChip(this, 'all')">All</span>
                           <span class="filter-chip" onclick="toggleFilterChip(this, 'Books')">Books</span>
                           <span class="filter-chip" onclick="toggleFilterChip(this, 'Electronics')">Electronics</span>
+                          <span class="filter-chip" onclick="toggleFilterChip(this, 'Lab Coat')">Lab Coat</span>
                           <span class="filter-chip" onclick="toggleFilterChip(this, 'Calculators')">Calculators</span>
                           <span class="filter-chip" onclick="toggleFilterChip(this, 'Furniture')">Furniture</span>
                         </div>
@@ -682,6 +688,7 @@
                               <option value="Books">Books</option>
                               <option value="Calculators">Calculators</option>
                               <option value="Lab Equipment">Lab Equipment</option>
+                              <option value="Lab Coat">Lab Coat</option>
                               <option value="Furniture">Furniture</option>
                               <option value="Cycles">Cycles</option>
                               <option value="Fashion">Fashion</option>

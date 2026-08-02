@@ -17,6 +17,7 @@ class CategoriesView extends ConsumerWidget {
       {'id': 'Calculators', 'icon': Icons.calculate_rounded, 'colors': [const Color(0xFFB155FF), const Color(0xFFF55555)]},
       {'id': 'Furniture', 'icon': Icons.chair_rounded, 'colors': [const Color(0xFFF39C12), const Color(0xFFF1C40F)]},
       {'id': 'Lab Equipment', 'icon': Icons.science_rounded, 'colors': [const Color(0xFF1ABC9C), const Color(0xFF2ECC71)]},
+      {'id': 'Lab Coat', 'icon': Icons.medical_services_rounded, 'colors': [const Color(0xFF00B4DB), const Color(0xFF0083B0)]},
       {'id': 'Sports', 'icon': Icons.sports_basketball_rounded, 'colors': [const Color(0xFFE74C3C), const Color(0xFF9B59B6)]},
       {'id': 'Fashion', 'icon': Icons.checkroom_rounded, 'colors': [const Color(0xFF34495E), const Color(0xFF2C3E50)]},
       {'id': 'Accessories', 'icon': Icons.watch_rounded, 'colors': [const Color(0xFF3498DB), const Color(0xFF2980B9)]},

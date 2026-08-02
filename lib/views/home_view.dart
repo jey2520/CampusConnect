@@ -26,6 +26,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     {'id': 'Calculators', 'icon': Icons.calculate_rounded, 'colors': [Colors.purple, Colors.pink]},
     {'id': 'Furniture', 'icon': Icons.chair_rounded, 'colors': [Colors.amber, Colors.orangeAccent]},
     {'id': 'Lab Equipment', 'icon': Icons.science_rounded, 'colors': [Colors.green, Colors.tealAccent]},
+    {'id': 'Lab Coat', 'icon': Icons.medical_services_rounded, 'colors': [Colors.cyan, Colors.teal]},
     {'id': 'Sports', 'icon': Icons.sports_basketball_rounded, 'colors': [Colors.red, Colors.pinkAccent]},
     {'id': 'Fashion', 'icon': Icons.checkroom_rounded, 'colors': [Colors.blueGrey, Colors.grey]},
     {'id': 'Accessories', 'icon': Icons.watch_rounded, 'colors': [Colors.indigo, Colors.indigoAccent]},
