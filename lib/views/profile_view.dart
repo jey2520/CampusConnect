@@ -78,6 +78,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
     final user = authState.userModel;
 
     return Scaffold(
+      extendBody: false,
       backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
@@ -108,13 +109,15 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
           ]
         ],
       ),
-      body: user == null
-          ? const Center(child: Text('User profile loading failed.'))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 120),
-              child: Form(
-                key: _formKey,
-                child: Column(
+      body: SafeArea(
+        bottom: true,
+        child: user == null
+            ? const Center(child: Text('User profile loading failed.'))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 180),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Avatar Header
@@ -295,6 +298,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                 ),
               ),
             ),
+      ),
     );
   }
 

@@ -651,7 +651,7 @@ body {
 
 /* Padding utilities */
 .padding-bottom-nav {
-  padding-bottom: 90px; /* offset for tab bar */
+  padding-bottom: 150px; /* offset for tab bar and centered FAB */
 }
 
 /* Bottom Nav bar container */
