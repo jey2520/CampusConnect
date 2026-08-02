@@ -714,6 +714,8 @@ body {
 .add-btn-circle {
   position: absolute;
   top: -28px; /* Floats slightly above the BottomAppBar with proper notch spacing */
+  left: 50%;
+  transform: translateX(-50%);
   width: 56px; /* Size: 56dp */
   height: 56px;
   background: var(--primary); /* Purple theme */
@@ -727,14 +729,9 @@ body {
   z-index: 10;
 }
 
-.add-btn-circle .material-icons-round {
-  font-size: 28px; /* White "+" icon */
-  color: white;
-}
-
 .nav-item.nav-add:hover .add-btn-circle {
   background: var(--primary-hover);
-  transform: scale(1.05) translateY(-2px);
+  transform: translateX(-50%) scale(1.05);
 }
 
 .nav-item.nav-add .nav-add-label {
