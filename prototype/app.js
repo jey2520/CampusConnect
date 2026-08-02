@@ -265,6 +265,9 @@ function navigateTo(screenId, pushToStack = true) {
   
   if (pushToStack && navigationStack[navigationStack.length - 1] !== screenId) {
     navigationStack.push(screenId);
+    if (typeof history !== 'undefined' && history.pushState) {
+      history.pushState({ screenId: screenId }, '', `#${screenId}`);
+    }
   }
   
   currentScreen = screenId;
@@ -294,10 +297,17 @@ function navigateTo(screenId, pushToStack = true) {
 }
 
 function navigateBack() {
-  if (navigationStack.length <= 1) return;
-  navigationStack.pop(); // Remove current screen
-  const prevScreen = navigationStack[navigationStack.length - 1];
-  navigateTo(prevScreen, false);
+  if (typeof history !== 'undefined' && history.state && navigationStack.length > 1) {
+    history.back();
+  } else {
+    if (navigationStack.length <= 1) {
+      navigateTo('home');
+      return;
+    }
+    navigationStack.pop(); // Remove current screen
+    const prevScreen = navigationStack[navigationStack.length - 1];
+    navigateTo(prevScreen, false);
+  }
 }
 
 function navTabClick(tabId) {
@@ -1900,6 +1910,21 @@ window.addEventListener('DOMContentLoaded', () => {
   // Parse launch queries to support direct login access and forced phone frames
   const urlParams = new URLSearchParams(window.location.search);
   const targetScreen = urlParams.get('screen') || 'login';
+
+  // Initialize browser history state
+  if (typeof history !== 'undefined' && history.replaceState) {
+    history.replaceState({ screenId: targetScreen }, '', `#${targetScreen}`);
+  }
+
+  // Handle browser back / forward button clicks
+  window.addEventListener('popstate', (event) => {
+    if (event.state && event.state.screenId) {
+      navigateTo(event.state.screenId, false);
+    } else {
+      const hash = window.location.hash.substring(1) || 'login';
+      navigateTo(hash, false);
+    }
+  });
   
   if (urlParams.get('mode') === 'phone' || !window.matchMedia("(min-width: 1024px)").matches) {
     document.body.classList.add('fullscreen-app-mode');

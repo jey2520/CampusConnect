@@ -113,19 +113,27 @@ class _TrackingViewState extends ConsumerState<TrackingView> {
           appBar: AppBar(
             backgroundColor: theme.colorScheme.surface,
             elevation: 0.5,
-            leading: isDetailView
-                ? IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: theme.colorScheme.onBackground),
-                    onPressed: () {
-                      setState(() {
-                        _selectedOrderId = null;
-                      });
-                    },
-                  )
-                : IconButton(
-                    icon: Icon(Icons.home_rounded, color: theme.colorScheme.onBackground),
-                    onPressed: () => context.go('/home'),
-                  ),
+            leading: IconButton(
+              icon: Icon(
+                Navigator.of(context).canPop()
+                    ? Icons.arrow_back_ios_new_rounded
+                    : Icons.home_rounded,
+                color: theme.colorScheme.onBackground,
+              ),
+              onPressed: () {
+                if (isDetailView && _selectedOrderId != null && allOrders.length > 1) {
+                  setState(() {
+                    _selectedOrderId = null;
+                  });
+                } else {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  } else {
+                    context.go('/home');
+                  }
+                }
+              },
+            ),
             title: Text(
               isDetailView ? 'Order Details' : 'Order Tracking',
               style: TextStyle(fontWeight: FontWeight.extrabold, color: theme.colorScheme.onBackground),
