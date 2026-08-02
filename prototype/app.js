@@ -288,6 +288,8 @@ function navigateTo(screenId, pushToStack = true) {
     renderChatsList();
   } else if (screenId === 'my-listings') {
     renderMyListings('active');
+  } else if (screenId === 'tracking') {
+    startOrdersListener();
   }
 }
 
@@ -1217,125 +1219,406 @@ function detectUserLocation() {
   );
 }
 
-function placeOrder() {
+let currentTrackingOrders = [];
+let trackingTabActive = true;
+let selectedTrackingOrderId = null;
+let ordersListener = null;
+
+async function placeOrder() {
   const prodId = document.getElementById('scr-product-details').dataset.activeProductId;
   const product = products.find(p => p.id === prodId) || myListings.find(p => p.id === prodId);
   if (!product) return;
 
-  // Navigate to tracking screen
-  navigateTo('tracking');
+  if (!currentUser || !currentUser.uid) {
+    showNotification("Please log in to place an order.");
+    return;
+  }
 
-  // Reset stepper states and times
-  document.querySelectorAll('.step-item').forEach(el => {
-    el.classList.remove('active');
-    el.classList.remove('completed');
-  });
-  document.querySelectorAll('.step-divider').forEach(el => {
-    el.classList.remove('active');
-    el.classList.remove('completed');
-  });
-  
-  document.getElementById('step-placed').classList.add('active');
-  document.getElementById('time-placed').textContent = 'Just Now';
-  document.getElementById('time-pickup').textContent = 'Pending';
-  document.getElementById('time-way').textContent = 'Pending';
-  document.getElementById('time-near').textContent = 'Pending';
-  document.getElementById('time-delivered').textContent = 'Pending';
+  showNotification("Placing your order...");
 
-  document.getElementById('tracking-map-status').textContent = 'Seller is preparing package...';
-  
-  const courier = document.getElementById('map-courier-marker');
-  if (courier) courier.setAttribute('transform', 'translate(30,80)');
+  try {
+    const orderId = db.collection('orders').doc().id;
+    const orderDoc = {
+      orderId: orderId,
+      buyerUID: currentUser.uid,
+      sellerUID: product.sellerUid || product.uid || 'dummy_seller',
+      listingID: product.id,
+      status: 'Pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      title: product.title,
+      price: product.price,
+      image: product.image || (product.images && product.images[0]) || ''
+    };
 
-  // Reset logs feed
-  const logsList = document.getElementById('tracking-logs-list');
-  logsList.innerHTML = `
-    <div class="log-item latest">
-      <span class="log-dot"></span>
-      <div class="log-info">
-        <span class="log-text">Order placed successfully. Awaiting seller confirmation.</span>
-        <span class="log-time">Just Now</span>
-      </div>
-    </div>
-  `;
+    await db.collection('orders').doc(orderId).set(orderDoc);
 
-  // Clear existing timeouts
-  trackingTimeouts.forEach(clearTimeout);
-  trackingTimeouts = [];
+    // Update listing status to sold
+    await db.collection('items').doc(product.id).update({ status: 'sold' });
 
-  // Start simulation timeouts
-  // 1. Courier Picked Up
-  trackingTimeouts.push(setTimeout(() => {
-    document.getElementById('step-placed').classList.add('completed');
-    document.getElementById('div-pickup').classList.add('active');
-    document.getElementById('step-pickup').classList.add('active');
-    document.getElementById('time-pickup').textContent = 'Just Now';
-    document.getElementById('tracking-map-status').textContent = 'Courier picking up item...';
-    if (courier) courier.setAttribute('transform', 'translate(80,80)');
-    appendTrackingLog('Courier arrived at seller location. Picking up package.', 'Just Now');
-  }, 3000));
-
-  // 2. On the way
-  trackingTimeouts.push(setTimeout(() => {
-    document.getElementById('step-pickup').classList.add('completed');
-    document.getElementById('div-pickup').classList.add('completed');
-    document.getElementById('div-way').classList.add('active');
-    document.getElementById('step-way').classList.add('active');
-    document.getElementById('time-way').textContent = 'Just Now';
-    document.getElementById('tracking-map-status').textContent = 'Courier is on the way...';
-    if (courier) courier.setAttribute('transform', 'translate(130,80)');
-    appendTrackingLog('Package picked up. Courier is transit-bound.', 'Just Now');
-  }, 6000));
-
-  // 3. Nearby 100m
-  trackingTimeouts.push(setTimeout(() => {
-    document.getElementById('step-way').classList.add('completed');
-    document.getElementById('div-way').classList.add('completed');
-    document.getElementById('div-near').classList.add('active');
-    document.getElementById('step-near').classList.add('active');
-    document.getElementById('time-near').textContent = 'Just Now';
-    document.getElementById('tracking-map-status').textContent = 'Courier is nearby (100m away)!';
-    if (courier) courier.setAttribute('transform', 'translate(130,40)');
-    appendTrackingLog('Courier is approaching your building (within 100m).', 'Just Now');
-  }, 9000));
-
-  // 4. Delivered
-  trackingTimeouts.push(setTimeout(() => {
-    document.getElementById('step-near').classList.add('completed');
-    document.getElementById('div-near').classList.add('completed');
-    document.getElementById('div-delivered').classList.add('active');
-    document.getElementById('step-delivered').classList.add('active');
-    document.getElementById('step-delivered').classList.add('completed');
-    document.getElementById('time-delivered').textContent = 'Just Now';
-    document.getElementById('tracking-map-status').textContent = 'Courier arrived! Handover completed.';
-    if (courier) courier.setAttribute('transform', 'translate(250,40)');
+    showNotification("Order placed successfully!");
     
-    const locationText = (userLatitude && userLongitude) 
-      ? `Handover completed at pinned location (${userLatitude}° N, ${userLongitude}° E).`
-      : 'Handover completed.';
-    appendTrackingLog(`${locationText} Order delivered successfully!`, 'Just Now');
-    
-    showSuccessDialog(`Order Delivered! Thank you for buying on CampusConnect.`);
-  }, 12000));
+    // Automatically load tracking tab
+    navigateTo('tracking');
+  } catch (error) {
+    console.error("Error placing order:", error);
+    showNotification("Error placing order: " + error.message);
+  }
 }
 
-function appendTrackingLog(text, time) {
-  const logsList = document.getElementById('tracking-logs-list');
-  if (!logsList) return;
+function startOrdersListener() {
+  if (ordersListener) {
+    ordersListener(); // Detach previous listener
+    ordersListener = null;
+  }
 
-  // Remove latest class from old logs
-  logsList.querySelectorAll('.log-item').forEach(el => el.classList.remove('latest'));
+  if (!currentUser || !currentUser.uid) {
+    renderTrackingState([]);
+    return;
+  }
 
-  // Prepend new log
-  logsList.insertAdjacentHTML('afterbegin', `
-    <div class="log-item latest">
-      <span class="log-dot"></span>
-      <div class="log-info">
-        <span class="log-text">${text}</span>
-        <span class="log-time">${time}</span>
+  ordersListener = db.collection('orders')
+    .where('buyerUID', '==', currentUser.uid)
+    .onSnapshot(snapshot => {
+      const orders = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        data.id = doc.id;
+        orders.push(data);
+      });
+      currentTrackingOrders = orders;
+      renderTrackingState(orders);
+    }, error => {
+      console.error("Error fetching orders:", error);
+    });
+}
+
+function renderTrackingState(orders) {
+  const activeOrders = orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
+  const completedOrders = orders.filter(o => o.status === 'Delivered' || o.status === 'Cancelled');
+
+  const emptyStateEl = document.getElementById('tracking-empty-state');
+  const listContainerEl = document.getElementById('tracking-list-container');
+  const detailsViewEl = document.getElementById('tracking-details-view');
+
+  // Auto select if there is exactly 1 active order and no selected order yet
+  if (trackingTabActive && activeOrders.length === 1 && !selectedTrackingOrderId) {
+    selectedTrackingOrderId = activeOrders[0].id;
+  }
+
+  if (selectedTrackingOrderId) {
+    // Show detailed tracking view for selected order
+    emptyStateEl.style.display = 'none';
+    listContainerEl.style.display = 'none';
+    detailsViewEl.style.display = 'block';
+
+    const order = orders.find(o => o.id === selectedTrackingOrderId);
+    if (order) {
+      updateTrackingTimeline(order);
+    } else {
+      selectedTrackingOrderId = null;
+      renderTrackingState(orders);
+    }
+    return;
+  }
+
+  // If no selected order, show list or empty state
+  detailsViewEl.style.display = 'none';
+
+  if (trackingTabActive) {
+    if (activeOrders.length === 0) {
+      emptyStateEl.style.display = 'block';
+      listContainerEl.style.display = 'none';
+      emptyStateEl.querySelector('h4').textContent = "No Active Orders";
+      emptyStateEl.querySelector('p').textContent = "You haven't placed any orders yet.";
+      emptyStateEl.querySelector('.btn-app').style.display = 'inline-block';
+    } else {
+      emptyStateEl.style.display = 'none';
+      listContainerEl.style.display = 'block';
+      renderOrdersListView(activeOrders);
+    }
+  } else {
+    if (completedOrders.length === 0) {
+      emptyStateEl.style.display = 'block';
+      listContainerEl.style.display = 'none';
+      emptyStateEl.querySelector('h4').textContent = "No Past Orders";
+      emptyStateEl.querySelector('p').textContent = "Your completed and cancelled orders will show up here.";
+      emptyStateEl.querySelector('.btn-app').style.display = 'none';
+    } else {
+      emptyStateEl.style.display = 'none';
+      listContainerEl.style.display = 'block';
+      renderOrdersListView(completedOrders);
+    }
+  }
+}
+
+function switchTrackingTab(isActive) {
+  trackingTabActive = isActive;
+  selectedTrackingOrderId = null;
+  
+  const tabActive = document.getElementById('tab-active-orders');
+  const tabCompleted = document.getElementById('tab-completed-orders');
+  
+  if (isActive) {
+    tabActive.style.borderBottomColor = 'var(--primary)';
+    tabActive.style.color = 'var(--primary)';
+    tabActive.style.fontWeight = '700';
+    tabCompleted.style.borderBottomColor = 'transparent';
+    tabCompleted.style.color = 'var(--text-secondary)';
+    tabCompleted.style.fontWeight = '500';
+  } else {
+    tabCompleted.style.borderBottomColor = 'var(--primary)';
+    tabCompleted.style.color = 'var(--primary)';
+    tabCompleted.style.fontWeight = '700';
+    tabActive.style.borderBottomColor = 'transparent';
+    tabActive.style.color = 'var(--text-secondary)';
+    tabActive.style.fontWeight = '500';
+  }
+  
+  renderTrackingState(currentTrackingOrders);
+}
+
+function backToTrackingList() {
+  selectedTrackingOrderId = null;
+  renderTrackingState(currentTrackingOrders);
+}
+
+function handleTrackingBack() {
+  if (selectedTrackingOrderId) {
+    backToTrackingList();
+  } else {
+    navigateTo('home');
+  }
+}
+
+function renderOrdersListView(ordersList) {
+  const container = document.getElementById('tracking-orders-list-view');
+  if (!container) return;
+
+  if (ordersList.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding: 24px; color: var(--text-secondary);">No orders found.</div>`;
+    return;
+  }
+
+  container.innerHTML = ordersList.map(order => {
+    const statusColor = getStatusColor(order.status);
+    const orderImage = order.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100';
+    return `
+      <div class="card shadow-premium" style="margin-bottom: 12px; padding: 12px; cursor: pointer; display: flex; align-items: center; border: 1px solid var(--border-light); border-radius: 16px; background: var(--bg-card);" onclick="selectTrackingOrder('${order.id}')">
+        <img src="${orderImage}" style="width: 50px; height: 50px; border-radius: 12px; object-fit: cover; margin-right: 12px;" onerror="this.src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100'"/>
+        <div style="flex: 1;">
+          <h5 style="font-weight: 700; font-size: 14px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; color: var(--text-primary);">${order.title}</h5>
+          <span style="font-weight: 800; color: var(--primary); font-size: 13px;">₹${order.price}</span>
+          <div style="margin-top: 6px;">
+            <span style="background: ${statusColor}1A; color: ${statusColor}; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; display: inline-block;">${order.status}</span>
+          </div>
+        </div>
+        <span class="material-icons-round" style="color: var(--text-secondary); font-size: 16px;">chevron_right</span>
       </div>
-    </div>
-  `);
+    `;
+  }).join('');
+}
+
+function selectTrackingOrder(orderId) {
+  selectedTrackingOrderId = orderId;
+  renderTrackingState(currentTrackingOrders);
+}
+
+function getStatusColor(status) {
+  switch (status) {
+    case 'Delivered':
+      return '#4CAF50';
+    case 'Cancelled':
+      return '#F44336';
+    case 'On the Way':
+    case 'Picked Up':
+      return '#2196F3';
+    case 'Preparing':
+    case 'Accepted':
+      return '#FF9800';
+    default:
+      return '#9E9E9E';
+  }
+}
+
+function getStatusStep(status) {
+  switch (status) {
+    case 'Pending':
+      return 0;
+    case 'Accepted':
+      return 1;
+    case 'Preparing':
+      return 2;
+    case 'Picked Up':
+      return 3;
+    case 'On the Way':
+      return 4;
+    case 'Delivered':
+      return 5;
+    default:
+      return 0;
+  }
+}
+
+function updateTrackingTimeline(order) {
+  const currentStep = getStatusStep(order.status);
+  const isCancelled = order.status === 'Cancelled';
+
+  let markerX = 30;
+  let markerY = 80;
+  let showMarker = true;
+  let statusDesc = '';
+
+  switch (order.status) {
+    case 'Pending':
+      markerX = 30;
+      markerY = 80;
+      statusDesc = 'Awaiting seller confirmation...';
+      break;
+    case 'Accepted':
+      markerX = 30;
+      markerY = 80;
+      statusDesc = 'Seller accepted your order!';
+      break;
+    case 'Preparing':
+      markerX = 30;
+      markerY = 80;
+      statusDesc = 'Seller is preparing your package...';
+      break;
+    case 'Picked Up':
+      markerX = 80;
+      markerY = 80;
+      statusDesc = 'Courier picked up package!';
+      break;
+    case 'On the Way':
+      markerX = 160;
+      markerY = 60;
+      statusDesc = 'Courier is transit-bound...';
+      break;
+    case 'Delivered':
+      markerX = 250;
+      markerY = 40;
+      statusDesc = 'Order delivered successfully!';
+      break;
+    case 'Cancelled':
+      showMarker = false;
+      statusDesc = 'Order was cancelled.';
+      break;
+  }
+
+  document.getElementById('tracking-map-status').textContent = statusDesc;
+  
+  const courier = document.getElementById('map-courier-marker');
+  if (courier) {
+    courier.setAttribute('transform', `translate(${markerX},${markerY})`);
+    courier.style.display = showMarker ? 'block' : 'none';
+  }
+
+  // Update step visual classes
+  updateStepUI('step-placed', currentStep >= 0, currentStep > 0, isCancelled);
+  updateDividerUI('div-pickup', currentStep > 0);
+  updateStepUI('step-pickup', currentStep >= 3, currentStep > 3, isCancelled);
+  updateDividerUI('div-way', currentStep > 3);
+  updateStepUI('step-way', currentStep >= 4, currentStep > 4, isCancelled);
+  updateDividerUI('div-near', currentStep > 4);
+  updateStepUI('step-near', currentStep >= 5, currentStep > 5, isCancelled);
+  updateDividerUI('div-delivered', currentStep > 5);
+  updateStepUI('step-delivered', currentStep >= 5, currentStep >= 5, isCancelled);
+
+  // Set step timestamps
+  document.getElementById('time-placed').textContent = 'Just Now';
+  document.getElementById('time-pickup').textContent = currentStep >= 3 ? 'Completed' : 'Pending';
+  document.getElementById('time-way').textContent = currentStep >= 4 ? 'Completed' : 'Pending';
+  document.getElementById('time-near').textContent = currentStep >= 5 ? 'Completed' : 'Pending';
+  document.getElementById('time-delivered').textContent = currentStep >= 5 ? 'Completed' : 'Pending';
+
+  // Render activity log
+  const logsList = document.getElementById('tracking-logs-list');
+  if (logsList) {
+    if (isCancelled) {
+      logsList.innerHTML = `
+        <div class="log-item latest">
+          <span class="log-dot" style="background: #F44336;"></span>
+          <div class="log-info">
+            <span class="log-text" style="color: #F44336; font-weight:700;">This order has been cancelled.</span>
+            <span class="log-time">Just Now</span>
+          </div>
+        </div>
+      `;
+    } else {
+      let logsHtml = '';
+      if (currentStep >= 5) {
+        logsHtml += `
+          <div class="log-item latest">
+            <span class="log-dot" style="background: #4CAF50;"></span>
+            <div class="log-info">
+              <span class="log-text" style="font-weight: 700;">Order delivered successfully!</span>
+              <span class="log-time">Just Now</span>
+            </div>
+          </div>
+        `;
+      }
+      if (currentStep >= 4) {
+        logsHtml += `
+          <div class="log-item ${currentStep === 4 ? 'latest' : ''}">
+            <span class="log-dot"></span>
+            <div class="log-info">
+              <span class="log-text">Courier is approaching your building (within 100m).</span>
+              <span class="log-time">Recently</span>
+            </div>
+          </div>
+        `;
+      }
+      if (currentStep >= 3) {
+        logsHtml += `
+          <div class="log-item ${currentStep === 3 ? 'latest' : ''}">
+            <span class="log-dot"></span>
+            <div class="log-info">
+              <span class="log-text">Package picked up. Courier is transit-bound.</span>
+              <span class="log-time">Recently</span>
+            </div>
+          </div>
+        `;
+      }
+      logsHtml += `
+        <div class="log-item ${currentStep === 0 ? 'latest' : ''}">
+          <span class="log-dot"></span>
+          <div class="log-info">
+            <span class="log-text">Order placed successfully. Awaiting seller confirmation.</span>
+            <span class="log-time">Just Now</span>
+          </div>
+        </div>
+      `;
+      logsList.innerHTML = logsHtml;
+    }
+  }
+}
+
+function updateStepUI(elementId, isActive, isCompleted, isCancelled) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  
+  if (isCompleted) {
+    el.classList.add('completed');
+    el.classList.add('active');
+  } else if (isActive) {
+    el.classList.remove('completed');
+    el.classList.add('active');
+  } else {
+    el.classList.remove('completed');
+    el.classList.remove('active');
+  }
+}
+
+function updateDividerUI(elementId, isCompleted) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  if (isCompleted) {
+    el.classList.add('completed');
+    el.classList.add('active');
+  } else {
+    el.classList.remove('completed');
+    el.classList.remove('active');
+  }
 }
 
 // ==========================================================================

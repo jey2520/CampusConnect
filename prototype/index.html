@@ -1048,12 +1048,33 @@
                 <div class="screen-container" id="scr-tracking">
                   <div class="screen-content scrollable padding-bottom-nav">
                     <div class="screen-header">
-                      <button class="btn-back" onclick="navigateTo('home')"><span class="material-icons-round">home</span></button>
+                      <button class="btn-back" onclick="handleTrackingBack()"><span class="material-icons-round">arrow_back</span></button>
                       <h3>Order Tracking</h3>
                       <div style="width:24px"></div>
                     </div>
                     
-                    <div class="tracking-body">
+                    <!-- Empty State View -->
+                    <div class="tracking-empty-state" id="tracking-empty-state" style="display: none; text-align: center; padding: 60px 20px;">
+                      <div class="empty-state-icon" style="width: 120px; height: 120px; background: rgba(108, 76, 247, 0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                        <span class="material-icons-round" style="font-size: 56px; color: var(--primary);">shopping_bag</span>
+                      </div>
+                      <h4 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">No Active Orders</h4>
+                      <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 24px;">You haven't placed any orders yet.</p>
+                      <button class="btn-app" onclick="navigateTo('home')" style="width: auto; padding: 12px 32px; border-radius: 12px;">Browse Marketplace</button>
+                    </div>
+
+                    <!-- Orders List View -->
+                    <div class="tracking-list-container" id="tracking-list-container" style="display: none; padding: 12px;">
+                      <!-- Tab switcher inside tracking -->
+                      <div style="display: flex; border-bottom: 1px solid var(--border-light); margin-bottom: 12px;">
+                        <button id="tab-active-orders" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 2px solid var(--primary); font-weight: 700; color: var(--primary); cursor: pointer; font-family: inherit;" onclick="switchTrackingTab(true)">Active Orders</button>
+                        <button id="tab-completed-orders" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 2px solid transparent; font-weight: 500; color: var(--text-secondary); cursor: pointer; font-family: inherit;" onclick="switchTrackingTab(false)">Order History</button>
+                      </div>
+                      <div id="tracking-orders-list-view"></div>
+                    </div>
+
+                    <!-- Details Tracking View -->
+                    <div class="tracking-body" id="tracking-details-view" style="display: none;">
                       <!-- Live Map Animation -->
                       <div class="tracking-map-container">
                         <svg viewBox="0 0 300 120" width="100%" height="120" class="tracking-map-svg">
@@ -1146,7 +1167,7 @@
                         </div>
                       </div>
 
-                      <button class="btn-app-secondary ripple" onclick="navigateTo('home')" style="margin-top: 10px;">Return to Home</button>
+                      <button class="btn-app-secondary ripple" onclick="backToTrackingList()" style="margin-top: 10px;">Back to Orders</button>
                     </div>
                   </div>
                 </div>

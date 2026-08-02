@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../providers/auth_provider.dart';
 import '../providers/product_provider.dart';
 import '../models/product_model.dart';
 
@@ -209,9 +211,61 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
 
             // Submit Button
             ElevatedButton(
-              onPressed: () {
-                // Navigate to tracking simulation screen
-                context.pushReplacement('/tracking');
+              onPressed: () async {
+                final user = ref.read(authProvider).userModel;
+                if (user == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please log in to place an order.'),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
+
+                // Show loading indicator dialog
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                );
+
+                try {
+                  final String orderId = FirebaseFirestore.instance.collection('orders').doc().id;
+                  await FirebaseFirestore.instance.collection('orders').doc(orderId).set({
+                    'buyerUID': user.id,
+                    'sellerUID': product.sellerUid,
+                    'listingID': product.id,
+                    'status': 'Pending',
+                    'createdAt': FieldValue.serverTimestamp(),
+                    'title': product.title,
+                    'price': product.price,
+                    'image': product.image,
+                  });
+
+                  // Update product status to sold
+                  await FirebaseFirestore.instance.collection('items').doc(product.id).update({
+                    'status': 'sold',
+                  });
+
+                  // Refresh local product cache
+                  ref.read(productProvider.notifier).fetchProducts();
+
+                  if (!mounted) return;
+                  Navigator.pop(context); // Dismiss loading dialog
+                  context.pushReplacement('/tracking');
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.pop(context); // Dismiss loading dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error placing order: $e'),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
