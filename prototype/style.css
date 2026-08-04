@@ -3437,7 +3437,7 @@ body.fullscreen-app-mode .phone-screen {
 }
 
 /* Universal SVG icon size scaling fix */
-.material-icons-round {
+.material-icons-round, .material-svg-icon {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
@@ -3447,7 +3447,7 @@ body.fullscreen-app-mode .phone-screen {
   overflow: visible !important;
 }
 
-.material-icons-round svg {
+.material-icons-round svg, .material-svg-icon svg {
   width: 100% !important;
   height: 100% !important;
   display: block;

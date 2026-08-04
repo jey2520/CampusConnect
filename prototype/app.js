@@ -73,11 +73,42 @@ const SVG_ICONS = {
   'add_a_photo': 'M3 4V1h2v3h3v2H5v3H3V6H0V4h3zm3 6V7h3V4h7l1.83 2H21c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V10h2zm7 9c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0-8c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z',
   'visibility': 'M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z',
   'arrow_back_ios_new': 'M11.67 3.87L9.9 2.1 0 12l9.9 9.9 1.77-1.77L3.54 12z',
-  'chevron_right': 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'
+  'chevron_right': 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z',
+  'medical_services': 'M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4zm11 16H3V8h18v12zm-5-7h-3v-3h-2v3H8v2h3v3h2v-3h3v-2z'
 };
 
 function replaceMaterialIcons(root = document) {
-  // Let the browser load the Google Font natively to prevent device-specific SVG layout glitches
+  const elements = root.querySelectorAll('.material-icons-round');
+  elements.forEach(el => {
+    const iconName = el.textContent.trim();
+    const path = SVG_ICONS[iconName];
+    if (path) {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('width', '24');
+      svg.setAttribute('height', '24');
+      svg.classList.add('material-svg-icon');
+      
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathEl.setAttribute('d', path);
+      pathEl.setAttribute('fill', 'currentColor');
+      
+      svg.appendChild(pathEl);
+      
+      const classList = Array.from(el.classList);
+      classList.forEach(cls => {
+        if (cls !== 'material-icons-round') {
+          svg.classList.add(cls);
+        }
+      });
+      
+      if (el.getAttribute('style')) {
+        svg.setAttribute('style', el.getAttribute('style'));
+      }
+      
+      el.replaceWith(svg);
+    }
+  });
 }
 
 // ==========================================================================
