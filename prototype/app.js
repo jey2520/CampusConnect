@@ -1926,6 +1926,18 @@ window.addEventListener('DOMContentLoaded', () => {
       navigateTo(hash, false);
     }
   });
+
+  // Prevent default action on all see-all links and navigation links globally
+  document.addEventListener('click', (event) => {
+    const target = event.target.closest('a');
+    if (target) {
+      const href = target.getAttribute('href');
+      const onclick = target.getAttribute('onclick');
+      if (href === '#' || href === 'javascript:void(0)' || onclick) {
+        event.preventDefault();
+      }
+    }
+  });
   
   if (urlParams.get('mode') === 'phone' || !window.matchMedia("(min-width: 1024px)").matches) {
     document.body.classList.add('fullscreen-app-mode');
