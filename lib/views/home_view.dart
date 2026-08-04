@@ -21,7 +21,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   final List<Map<String, dynamic>> _categories = [
     {'id': 'Books', 'icon': Icons.menu_book_rounded, 'colors': [Colors.orange, Colors.red]},
-    {'id': 'Electronics', 'icon': Icons.laptop_mac_rounded, 'colors': [Colors.blue, Colors.cyan]},
+    {'id': 'Electronics', 'icon': Icons.devices_rounded, 'colors': [Colors.blue, Colors.cyan]},
     {'id': 'Cycles', 'icon': Icons.directions_bike_rounded, 'colors': [Colors.teal, Colors.green]},
     {'id': 'Calculators', 'icon': Icons.calculate_rounded, 'colors': [Colors.purple, Colors.pink]},
     {'id': 'Furniture', 'icon': Icons.chair_rounded, 'colors': [Colors.amber, Colors.orangeAccent]},

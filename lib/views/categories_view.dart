@@ -12,7 +12,7 @@ class CategoriesView extends ConsumerWidget {
 
     final List<Map<String, dynamic>> categories = [
       {'id': 'Books', 'icon': Icons.menu_book_rounded, 'colors': [const Color(0xFFFF6B6B), const Color(0xFFFF8E53)]},
-      {'id': 'Electronics', 'icon': Icons.laptop_mac_rounded, 'colors': [const Color(0xFF4E65FF), const Color(0xFF92EFFD)]},
+      {'id': 'Electronics', 'icon': Icons.devices_rounded, 'colors': [const Color(0xFF4E65FF), const Color(0xFF92EFFD)]},
       {'id': 'Cycles', 'icon': Icons.directions_bike_rounded, 'colors': [const Color(0xFF00D2B8), const Color(0xFF00F2FE)]},
       {'id': 'Calculators', 'icon': Icons.calculate_rounded, 'colors': [const Color(0xFFB155FF), const Color(0xFFF55555)]},
       {'id': 'Furniture', 'icon': Icons.chair_rounded, 'colors': [const Color(0xFFF39C12), const Color(0xFFF1C40F)]},
